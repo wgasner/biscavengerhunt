@@ -6,6 +6,9 @@
 <title>BI Chamber — Staff Verification</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --ocean:#0b3d5e;--ocean-mid:#1a6b8a;--ocean-light:#2fa8c8;
@@ -342,35 +345,111 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-dark
 
 <script>
 // ════════════════════════════════════════
-//  STAFF ACCOUNTS
-//  TODO: Replace with Firebase Auth in production
+//  FIREBASE CONFIG
+//  ⚠️  Paste your full config from Firebase
+//  console → Project Settings → Your apps
+// ════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyAzYysedavLKQKGKHqgHqsaVvjFblEHjYM",
+  authDomain:        "bi-app-scavenger-hunt.firebaseapp.com",
+  projectId:         "bi-app-scavenger-hunt",
+  storageBucket:     "bi-app-scavenger-hunt.firebasestorage.app",
+  messagingSenderId: "811862579900",
+  appId:             "1:811862579900:web:488d7b6652e55d31780eb9",
+  measurementId:     "G-GP7F3M7QDX"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ════════════════════════════════════════
+//  STAFF ACCOUNTS (UI colours + initials)
+//  PINs are verified against Firestore
+//  /staff/{id} — edit them in Firebase console
 // ════════════════════════════════════════
 const STAFF = [
-  {id:'s1', name:'Maya Chen',   role:'Manager', pin:'1234', color:'#1a6b8a', initials:'MC'},
-  {id:'s2', name:'Jake Torres', role:'Staff',   pin:'2345', color:'#3a7d44', initials:'JT'},
-  {id:'s3', name:'Lily Park',   role:'Staff',   pin:'3456', color:'#7b3fa0', initials:'LP'},
-  {id:'s4', name:'Tom Walsh',   role:'Staff',   pin:'4567', color:'#c0392b', initials:'TW'},
+  {id:'s1', name:'Maya Chen',   role:'Manager', color:'#1a6b8a', initials:'MC'},
+  {id:'s2', name:'Jake Torres', role:'Staff',   color:'#3a7d44', initials:'JT'},
+  {id:'s3', name:'Lily Park',   role:'Staff',   color:'#7b3fa0', initials:'LP'},
+  {id:'s4', name:'Tom Walsh',   role:'Staff',   color:'#c0392b', initials:'TW'},
 ];
 
-let currentStaff = null;
-let scannerStream = null;
+let currentStaff   = null;
+let scannerStream  = null;
 let scannerAnimFrame = null;
-let currentResult = null;
+let currentResult  = null;
 
 // ════════════════════════════════════════
-//  LOCAL STORAGE (replace with Firebase)
+//  FIRESTORE DATA LAYER
+//  Graceful fallback to localStorage if
+//  Firebase is offline or not yet configured
 // ════════════════════════════════════════
-function getRedemptions(){
+function isFirebaseReady(){
+  return firebaseConfig.apiKey !== 'PASTE_YOUR_API_KEY_HERE';
+}
+
+async function getRedemptions(){
+  if(isFirebaseReady()){
+    try{
+      const snap = await db.collection('redemptions')
+        .orderBy('ts','desc').limit(20).get();
+      return snap.docs.map(d=>d.data());
+    }catch(e){ console.warn('Firestore read failed, using local cache'); }
+  }
   try{ return JSON.parse(localStorage.getItem('bi_redemptions')||'[]'); }catch(e){ return []; }
 }
-function saveRedemption(record){
-  // TODO: await db.collection('redemptions').add(record);
-  const list = getRedemptions();
-  list.unshift(record);
-  localStorage.setItem('bi_redemptions', JSON.stringify(list.slice(0,200)));
+
+async function saveRedemption(record){
+  // Always write to localStorage as instant local cache
+  try{
+    const list = JSON.parse(localStorage.getItem('bi_redemptions')||'[]');
+    list.unshift(record);
+    localStorage.setItem('bi_redemptions', JSON.stringify(list.slice(0,200)));
+  }catch(e){}
+  // Write to Firestore (source of truth)
+  if(isFirebaseReady()){
+    try{
+      await db.collection('redemptions').doc(record.code).set({
+        ...record,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){ console.warn('Firestore write failed — saved locally only:', e); }
+  }
 }
-function isRedeemed(code){
-  return getRedemptions().some(r=>r.code===code && r.status==='redeemed');
+
+async function isRedeemed(code){
+  if(isFirebaseReady()){
+    try{
+      const doc = await db.collection('redemptions').doc(code).get();
+      return doc.exists && doc.data().status === 'redeemed';
+    }catch(e){ console.warn('Firestore check failed, falling back to local'); }
+  }
+  try{
+    return JSON.parse(localStorage.getItem('bi_redemptions')||'[]')
+      .some(r=>r.code===code && r.status==='redeemed');
+  }catch(e){ return false; }
+}
+
+async function verifyStaffPin(staffId, pin){
+  if(isFirebaseReady()){
+    try{
+      const doc = await db.collection('staff').doc(staffId).get();
+      if(doc.exists) return doc.data().pin === pin;
+    }catch(e){ console.warn('Firestore staff check failed, using local fallback'); }
+  }
+  // Fallback: hardcoded demo PINs (remove before going live)
+  const fallbackPins = {s1:'1234',s2:'2345',s3:'3456',s4:'4567'};
+  return fallbackPins[staffId] === pin;
+}
+
+async function getStaffMeta(staffId){
+  if(isFirebaseReady()){
+    try{
+      const doc = await db.collection('staff').doc(staffId).get();
+      if(doc.exists) return doc.data();
+    }catch(e){}
+  }
+  return null;
 }
 
 // ════════════════════════════════════════
@@ -413,13 +492,35 @@ function clearLoginError(){
   document.getElementById('login-error').style.display='none';
 }
 
-function attemptLogin(){
+async function attemptLogin(){
   if(!currentStaff){ showToast('Please select your account'); return; }
   const pin = document.getElementById('pin-input').value;
-  if(pin === currentStaff.pin){
-    // TODO: Firebase signInWithEmailAndPassword(auth, staff.email, pin)
+  const btn = document.querySelector('.login-btn');
+
+  // Show loading state
+  btn.textContent='Verifying…'; btn.disabled=true;
+
+  const valid = await verifyStaffPin(currentStaff.id, pin);
+
+  btn.textContent='Sign In →'; btn.disabled=false;
+
+  if(valid){
+    // Fetch latest staff meta from Firestore (role, name may have changed)
+    const meta = await getStaffMeta(currentStaff.id);
+    if(meta) currentStaff = {...currentStaff, ...meta};
+
     sessionStorage.setItem('bi_staff', JSON.stringify(currentStaff));
     document.getElementById('pin-input').value='';
+
+    // Log login to Firestore
+    if(isFirebaseReady()){
+      try{
+        await db.collection('staff').doc(currentStaff.id).update({
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+          lastLoginDevice: navigator.userAgent.slice(0,80)
+        });
+      }catch(e){}
+    }
     showScreen('dashboard');
   } else {
     document.getElementById('login-error').style.display='block';
@@ -439,7 +540,7 @@ function logout(){
 // ════════════════════════════════════════
 //  DASHBOARD
 // ════════════════════════════════════════
-function refreshDashboard(){
+async function refreshDashboard(){
   const staff = currentStaff || JSON.parse(sessionStorage.getItem('bi_staff')||'null');
   if(staff) document.getElementById('dash-staff-name').textContent=staff.name;
 
@@ -447,17 +548,22 @@ function refreshDashboard(){
   document.getElementById('dash-date').textContent =
     now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 
-  const all = getRedemptions();
+  // Show loading placeholders
+  ['dash-today','dash-week','dash-total'].forEach(id=>{
+    document.getElementById(id).textContent='…';
+  });
+
+  const all = await getRedemptions();
   const todayStr = now.toDateString();
-  const weekAgo = now.getTime() - 7*24*3600000;
+  const weekAgo  = now.getTime() - 7*24*3600000;
 
   document.getElementById('dash-today').textContent =
-    all.filter(r=>new Date(r.ts).toDateString()===todayStr).length;
+    all.filter(r=>r.ts && new Date(r.ts.seconds?r.ts.seconds*1000:r.ts).toDateString()===todayStr).length;
   document.getElementById('dash-week').textContent =
-    all.filter(r=>r.ts>weekAgo).length;
+    all.filter(r=>r.ts && (r.ts.seconds?r.ts.seconds*1000:r.ts)>weekAgo).length;
   document.getElementById('dash-total').textContent = all.length;
 
-  renderHistory();
+  renderHistory(all);
   renderDemoCodes();
 }
 
@@ -483,16 +589,18 @@ function renderDemoCodes(){
     </div>`).join('');
 }
 
-function renderHistory(){
+function renderHistory(all){
   const list = document.getElementById('history-list');
-  const all = getRedemptions().slice(0,10);
-  if(all.length===0){
+  const items = (all||[]).slice(0,10);
+  if(items.length===0){
     list.innerHTML=`<div class="empty-history"><div style="font-size:36px;margin-bottom:8px;">📋</div><div style="font-weight:600;color:var(--text-dark);margin-bottom:4px;">No verifications yet</div><div style="font-size:12px;">Scan a hunter's QR code to get started</div></div>`;
     return;
   }
   list.innerHTML='';
-  all.forEach(r=>{
-    const d=new Date(r.ts);
+  items.forEach(r=>{
+    // Handle both Firestore Timestamp objects and plain ms numbers
+    const tsMs = r.ts?.seconds ? r.ts.seconds*1000 : (r.ts||Date.now());
+    const d=new Date(tsMs);
     const timeStr=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const item=document.createElement('div');
@@ -507,7 +615,7 @@ function renderHistory(){
         <div class="history-meta">${r.huntName||'Hunt'} · ${r.tier||''} · ${dateStr} ${timeStr} · ${r.staffName||''}</div>
       </div>
       <div class="history-pts">${r.pts||0}<div style="font-size:10px;color:var(--text-light);font-family:'DM Sans',sans-serif;font-weight:400;">pts</div></div>`;
-    item.onclick=()=>{ currentResult=r; renderResult(r); showScreen('result'); };
+    item.onclick=async()=>{ currentResult=r; await renderResult(r); showScreen('result'); };
     list.appendChild(item);
   });
 }
@@ -656,17 +764,15 @@ const DEMO_CODES = {
 // ════════════════════════════════════════
 //  MANUAL CODE ENTRY
 // ════════════════════════════════════════
-function lookupManualCode(){
+async function lookupManualCode(){
   const raw=document.getElementById('manual-code-input').value.trim().toUpperCase();
   if(!raw){ showToast('Please enter a verification code'); return; }
   document.getElementById('manual-code-input').value='';
 
-  // Check demo codes first, then try JSON parse
   if(DEMO_CODES[raw]){
     const demo=DEMO_CODES[raw];
-    // If marked as already-redeemed demo, inject it into localStorage so it shows that state
-    if(demo._alreadyRedeemed && !isRedeemed(raw)){
-      saveRedemption({
+    if(demo._alreadyRedeemed && !(await isRedeemed(raw))){
+      await saveRedemption({
         code:raw, userName:demo.name, huntName:demo.hunt,
         pts:demo.pts, tier:demo.tier, reward:demo.reward,
         staffId:'demo', staffName:'Demo Staff',
@@ -674,29 +780,26 @@ function lookupManualCode(){
       });
     }
     currentResult=demo;
-    renderResult(demo);
+    await renderResult(demo);
     showScreen('result');
     return;
   }
-
-  // Fall back to raw / JSON
-  processQRData(raw);
+  await processQRData(raw);
 }
 
 // ════════════════════════════════════════
 //  PROCESS RESULT
 // ════════════════════════════════════════
-function processQRData(raw){
+async function processQRData(raw){
   let data;
   try{
     data=JSON.parse(raw);
     if(!data.code) throw new Error('no code');
   }catch(e){
-    // Maybe it's just a raw code string
     data={v:0,code:raw,name:'—',hunt:'Unknown Hunt',pts:0,done:0,total:0,tier:'—',reward:'Present code at Chamber',ts:Date.now(),_rawCode:true};
   }
   currentResult=data;
-  renderResult(data);
+  await renderResult(data);
   showScreen('result');
 }
 
@@ -728,8 +831,8 @@ function allPhotosResolved(items){
 // ════════════════════════════════════════
 //  RENDER RESULT
 // ════════════════════════════════════════
-function renderResult(data){
-  const alreadyRedeemed=isRedeemed(data.code);
+async function renderResult(data){
+  const alreadyRedeemed = await isRedeemed(data.code);
   const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
 
   // Init photo verify state from items
@@ -985,28 +1088,32 @@ function getTierMedal(tier){
   return m[tier]||'🏅';
 }
 
-function markRedeemed(){
+async function markRedeemed(){
   if(!currentResult) return;
+  const btn=document.getElementById('redeem-main-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
   const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
   const notes=document.getElementById('staff-notes')?.value||'';
-  // TODO: await db.collection('redemptions').add({...})
-  saveRedemption({
+  const verifiedItems=Object.entries(photoVerifyState)
+    .map(([i,v])=>({item:currentResult.completedItems?.[i]?.title||i, verdict:v}));
+  await saveRedemption({
     code:currentResult.code, userName:currentResult.name, huntName:currentResult.hunt,
     huntId:currentResult.huntId, type:currentResult.type, pts:currentResult.pts,
     tier:currentResult.tier, reward:currentResult.reward,
     done:currentResult.done, total:currentResult.total,
     staffId:staff.id, staffName:staff.name,
+    photoVerifications:verifiedItems,
     notes, ts:Date.now(), status:'redeemed'
   });
-  showToast('✅ Reward issued & logged!');
+  showToast('✅ Reward issued & saved to Firestore!');
   setTimeout(()=>showScreen('dashboard'),1200);
 }
 
-function markRejected(){
+async function markRejected(){
   if(!currentResult) return;
   const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
   const notes=document.getElementById('staff-notes')?.value||'';
-  saveRedemption({
+  await saveRedemption({
     code:currentResult.code, userName:currentResult.name, huntName:currentResult.hunt,
     pts:currentResult.pts, tier:currentResult.tier,
     staffId:staff.id, staffName:staff.name,
