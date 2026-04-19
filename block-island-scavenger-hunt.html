@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Block Island Scavenger Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --ocean:#0b3d5e; --ocean-mid:#1a6b8a; --ocean-light:#2fa8c8;
+  --teal:#22c5b0; --sand:#f5e9cc; --sand-dark:#e8d4a0;
+  --coral:#e8614a; --coral-light:#f2856f;
+  --warm-white:#faf7f0; --text-dark:#1a2b38; --text-mid:#3d5a6e; --text-light:#7a9aaa;
+  --gold:#d4a94a; --gold-light:#f0d080; --gold-dark:#a07820;
+  --green-isle:#3a7d44; --purple:#7b3fa0; --purple-light:#a05ec8;
+  --premium-border:#d4a94a; --event-red:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--ocean);color:var(--text-dark);min-height:100vh;overflow-x:hidden;}
+#app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--warm-white);position:relative;overflow:hidden;}
+
+/* ── SCREEN SYSTEM ── */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── WELCOME ── */
+#screen-welcome{background:linear-gradient(170deg,var(--ocean) 0%,var(--ocean-mid) 55%,var(--ocean-light) 100%);color:white;align-items:center;justify-content:flex-end;padding-bottom:0;position:relative;overflow:hidden;}
+.wave-bg{position:absolute;bottom:0;left:0;right:0;height:220px;background:var(--warm-white);clip-path:ellipse(120% 100% at 50% 100%);}
+.welcome-top{position:absolute;top:0;left:0;right:0;padding:60px 32px 0;text-align:center;}
+.lighthouse-icon{font-size:72px;display:block;margin-bottom:8px;filter:drop-shadow(0 4px 20px rgba(0,0,0,.3));animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.welcome-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:10px;}
+.welcome-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;line-height:1.1;color:white;text-shadow:0 2px 20px rgba(0,0,0,.3);}
+.welcome-title span{color:var(--teal);font-style:italic;}
+.welcome-subtitle{margin-top:12px;font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;}
+.ocean-scene{position:absolute;left:0;right:0;bottom:180px;height:80px;pointer-events:none;}
+.wave{position:absolute;width:200%;height:60px;background:rgba(255,255,255,.07);border-radius:50% 50% 0 0;animation:wave 4s ease-in-out infinite;bottom:0;left:-50%;}
+.wave:nth-child(2){animation-delay:-1.5s;opacity:.5;animation-duration:5s;}
+@keyframes wave{0%,100%{transform:translateX(0) translateY(0)}50%{transform:translateX(5%) translateY(-6px)}}
+.welcome-card{position:relative;z-index:2;background:var(--warm-white);width:100%;padding:32px 28px 48px;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;clip-path:ellipse(120% 100% at 50% 100%);}
+.hunt-count-badges{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
+.hunt-count-badge{background:var(--sand);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--ocean);display:flex;align-items:center;gap:5px;}
+
+/* ── BUTTONS ── */
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--coral) 0%,var(--coral-light) 100%);color:white;border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 24px rgba(232,97,74,.4);transition:transform .15s,box-shadow .15s;margin-bottom:12px;}
+.btn-primary:active{transform:scale(.98);}
+.btn-secondary{width:100%;background:transparent;color:var(--text-mid);border:2px solid var(--sand-dark);border-radius:16px;padding:16px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.btn-secondary:active{background:var(--sand);}
+.btn-gold{width:100%;background:linear-gradient(135deg,var(--gold-dark) 0%,var(--gold) 100%);color:white;border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 24px rgba(212,169,74,.45);transition:transform .15s;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-gold:active{transform:scale(.98);}
+.btn-ghost{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── SHARED HEADER COMPONENTS ── */
+.back-btn{position:absolute;top:14px;left:16px;background:rgba(255,255,255,.18);border:none;color:white;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;backdrop-filter:blur(8px);z-index:10;}
+.screen-header{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);padding:72px 24px 28px;color:white;position:relative;}
+.screen-header h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-top:0;}
+.screen-header p{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;line-height:1.5;}
+.screen-body{flex:1;padding:28px 24px;overflow-y:auto;}
+
+/* ── REGISTER ── */
+#screen-register{background:var(--warm-white);}
+.form-group{margin-bottom:20px;}
+.form-label{display:block;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;}
+.form-input{width:100%;padding:16px 18px;border:2px solid var(--sand-dark);border-radius:14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:white;transition:border-color .2s;outline:none;}
+.form-input:focus{border-color:var(--ocean-light);}
+.form-input::placeholder{color:var(--text-light);}
+.form-select{width:100%;padding:16px 18px;border:2px solid var(--sand-dark);border-radius:14px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233d5a6e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 18px center;outline:none;appearance:none;}
+.privacy-note{font-size:12px;color:var(--text-light);text-align:center;margin-top:16px;line-height:1.5;}
+
+/* ── HUNT LIST ── */
+#screen-hunts{background:var(--warm-white);}
+.hunts-header{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);padding:56px 24px 32px;color:white;}
+.hunts-header .greeting{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:4px;}
+.hunts-header h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:800;line-height:1.2;}
+.progress-overview{background:rgba(255,255,255,.12);border-radius:16px;padding:16px;margin-top:20px;display:flex;align-items:center;gap:16px;backdrop-filter:blur(8px);}
+.points-big{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--gold);line-height:1;}
+.points-label{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;}
+.divider-v{width:1px;height:40px;background:rgba(255,255,255,.2);}
+
+.section-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:24px;}
+.section-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);}
+.section-sub{font-size:12px;color:var(--text-light);}
+.section-toggle-btn{background:var(--sand);border:none;cursor:pointer;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:background .15s,transform .2s;color:var(--text-mid);}
+.section-toggle-btn.collapsed{transform:rotate(-90deg);}
+.section-collapsible{overflow:hidden;transition:max-height .35s ease,opacity .3s ease;max-height:2000px;opacity:1;}
+.section-collapsible.collapsed{max-height:0;opacity:0;pointer-events:none;}
+
+/* FREE HUNT CARDS */
+.hunt-card{background:white;border-radius:20px;margin-bottom:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06);cursor:pointer;transition:transform .15s;border:2px solid transparent;}
+.hunt-card:active{transform:scale(.98);}
+.hunt-card.completed{border-color:var(--green-isle);}
+.hunt-card-banner{height:90px;display:flex;align-items:flex-end;padding:14px 18px;position:relative;}
+.hunt-emoji{font-size:42px;position:absolute;top:12px;right:18px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.15));}
+.hunt-difficulty{background:rgba(0,0,0,.25);color:white;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;backdrop-filter:blur(4px);}
+.hunt-card-body{padding:16px 18px 18px;}
+.hunt-card-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text-dark);line-height:1.2;margin-bottom:4px;}
+.hunt-card-desc{font-size:13px;color:var(--text-mid);line-height:1.5;margin-bottom:12px;}
+.hunt-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.hunt-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--text-mid);}
+.hunt-progress-bar{height:4px;background:var(--sand-dark);border-radius:2px;margin-top:12px;overflow:hidden;}
+.hunt-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--ocean-light));border-radius:2px;transition:width .4s ease;}
+.hunt-completed-badge{background:var(--green-isle);color:white;border-radius:10px;padding:3px 10px;font-size:11px;font-weight:600;}
+
+/* PREMIUM HUNT CARDS */
+.premium-hunt-card{background:white;border-radius:20px;margin-bottom:16px;overflow:hidden;cursor:pointer;transition:transform .15s;border:2px solid var(--gold);box-shadow:0 4px 20px rgba(212,169,74,.2);}
+.premium-hunt-card:active{transform:scale(.98);}
+.premium-hunt-card.event-card{border-color:var(--event-red);box-shadow:0 4px 24px rgba(192,57,43,.25);}
+.premium-banner{height:120px;display:flex;align-items:flex-end;padding:14px 18px;position:relative;}
+.premium-banner-emoji{font-size:46px;position:absolute;top:10px;right:16px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.2));}
+.premium-type-badge{border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.badge-weekly{background:rgba(212,169,74,.25);color:#f0d080;border:1px solid rgba(212,169,74,.4);}
+.badge-monthly{background:rgba(47,168,200,.2);color:#7dd8f0;border:1px solid rgba(47,168,200,.4);}
+.badge-event{background:rgba(192,57,43,.3);color:#ff8f80;border:1px solid rgba(192,57,43,.5);}
+.price-pill{position:absolute;top:12px;left:16px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:6px;color:white;font-size:13px;font-weight:700;}
+.price-pill .lock-icon{font-size:12px;opacity:.8;}
+.expires-pill{position:absolute;top:46px;left:16px;background:rgba(0,0,0,.25);backdrop-filter:blur(4px);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.85);font-size:11px;font-weight:500;}
+.event-live-dot{width:7px;height:7px;background:#ff4444;border-radius:50%;animation:pulse-dot 1.2s ease-in-out infinite;display:inline-block;margin-right:4px;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.premium-card-body{padding:16px 18px 18px;}
+.prize-teaser{background:linear-gradient(135deg,#fff8e6,#fff3d0);border:1px solid #ffe9a0;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:12px;}
+.prize-teaser-text{font-size:12px;color:#7a5a00;font-weight:500;line-height:1.4;}
+
+/* ── HUNT PREVIEW (PREMIUM) ── */
+#screen-hunt-preview{background:var(--warm-white);}
+.preview-header{padding:72px 24px 28px;color:white;position:relative;}
+.preview-header .preview-emoji{font-size:60px;display:block;margin-bottom:12px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.25));}
+.preview-header h2{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;line-height:1.1;margin-bottom:8px;}
+.preview-header .preview-desc{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:16px;}
+.preview-meta-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.preview-chip{background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border-radius:12px;padding:7px 14px;font-size:12px;font-weight:600;color:white;}
+.event-countdown-box{background:rgba(0,0,0,.25);backdrop-filter:blur(8px);border-radius:16px;padding:16px;margin-top:16px;text-align:center;}
+.event-countdown-label{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.event-countdown-time{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:#ff8f80;letter-spacing:2px;}
+.event-grand-prize{background:linear-gradient(135deg,rgba(212,169,74,.3),rgba(212,169,74,.1));border:1px solid rgba(212,169,74,.5);border-radius:16px;padding:16px;margin:0 16px;display:flex;align-items:center;gap:14px;}
+.grand-prize-trophy{font-size:40px;}
+.grand-prize-label{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.grand-prize-value{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--text-dark);}
+.grand-prize-sub{font-size:12px;color:var(--text-mid);margin-top:2px;}
+
+/* PRIZE TIERS */
+.prize-tiers-section{margin:0 16px 16px;}
+.prize-tiers-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;}
+.prize-tier-card{border-radius:16px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;}
+.tier-bronze{background:linear-gradient(135deg,#fdf1e6,#fae3c8);border:1px solid #e8c49a;}
+.tier-silver{background:linear-gradient(135deg,#f2f5f8,#e4eaf0);border:1px solid #b8c8d8;}
+.tier-gold{background:linear-gradient(135deg,#fffbeb,#fff3c8);border:1px solid #e8d070;}
+.tier-platinum{background:linear-gradient(135deg,#f0f8ff,#e0f0ff);border:1px solid #90c8f0;}
+.tier-medal{font-size:32px;}
+.tier-info{flex:1;}
+.tier-name{font-weight:700;font-size:14px;color:var(--text-dark);margin-bottom:2px;}
+.tier-req{font-size:11px;color:var(--text-mid);margin-bottom:5px;}
+.tier-reward{font-size:13px;font-weight:500;color:var(--text-dark);}
+
+.unlock-btn-area{padding:20px 16px;background:var(--warm-white);position:sticky;bottom:0;border-top:1px solid var(--sand);}
+.price-breakdown{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 4px;}
+.price-left{font-size:14px;color:var(--text-mid);}
+.price-right{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--text-dark);}
+
+/* ── PAYMENT MODAL ── */
+#payment-modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:900;display:none;max-width:430px;margin:0 auto;}
+#payment-modal.open{display:flex;flex-direction:column;}
+.payment-backdrop{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);}
+.payment-sheet{position:absolute;bottom:0;left:0;right:0;background:white;border-radius:28px 28px 0 0;padding:28px 24px 48px;animation:slideUp .3s cubic-bezier(.22,.61,.36,1);}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.payment-handle{width:36px;height:4px;background:var(--sand-dark);border-radius:2px;margin:0 auto 24px;}
+.payment-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;margin-bottom:4px;}
+.payment-subtitle{font-size:13px;color:var(--text-light);margin-bottom:24px;}
+.payment-summary{background:var(--sand);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.payment-hunt-name{font-weight:600;font-size:14px;color:var(--text-dark);}
+.payment-hunt-type{font-size:12px;color:var(--text-mid);}
+.payment-price{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--text-dark);}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.payment-input{width:100%;padding:14px 16px;border:2px solid var(--sand-dark);border-radius:12px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:white;outline:none;transition:border-color .2s;}
+.payment-input:focus{border-color:var(--ocean-light);}
+.payment-input::placeholder{color:var(--text-light);}
+.secure-note{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--text-light);margin-bottom:20px;margin-top:4px;}
+.payment-processing{display:none;text-align:center;padding:20px 0;}
+.spinner{width:40px;height:40px;border:3px solid var(--sand-dark);border-top-color:var(--ocean);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.payment-success{display:none;text-align:center;padding:20px 0;}
+.success-circle{width:64px;height:64px;background:linear-gradient(135deg,var(--teal),#1aad9a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px;}
+.success-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.success-sub{font-size:13px;color:var(--text-light);}
+
+/* ── HUNT DETAIL ── */
+#screen-hunt-detail{background:var(--warm-white);}
+.hunt-detail-header{padding:72px 24px 28px;color:white;position:relative;}
+.hunt-detail-header .hunt-emoji-large{font-size:56px;display:block;margin-bottom:12px;}
+.hunt-detail-header h2{font-family:'Playfair Display',serif;font-size:30px;font-weight:800;line-height:1.1;margin-bottom:6px;}
+.hunt-detail-header .desc{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:20px;}
+.hunt-stats-row{display:flex;gap:10px;flex-wrap:wrap;}
+.hunt-stat-chip{background:rgba(255,255,255,.15);border-radius:12px;padding:8px 14px;font-size:12px;font-weight:600;color:white;backdrop-filter:blur(4px);display:flex;align-items:center;gap:6px;}
+.timer-chip{background:rgba(192,57,43,.35);border:1px solid rgba(255,100,80,.4);color:#ffb0a0;animation:timerGlow 2s ease-in-out infinite;}
+@keyframes timerGlow{0%,100%{box-shadow:none}50%{box-shadow:0 0 12px rgba(255,100,80,.4)}}
+.items-list{padding:20px 16px 110px;}
+.item-card{background:white;border-radius:18px;margin-bottom:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:transform .15s;border:2px solid transparent;position:relative;overflow:hidden;}
+.item-card:active{transform:scale(.98);}
+.item-card.completed{border-color:var(--teal);}
+.item-card.completed::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--teal);}
+.item-icon-circle{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.item-card-content{flex:1;min-width:0;}
+.item-card-title{font-weight:600;font-size:15px;color:var(--text-dark);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-card-subtitle{font-size:12px;color:var(--text-light);}
+.item-points-badge{background:var(--sand);color:var(--gold-dark);font-weight:700;font-size:12px;border-radius:10px;padding:4px 10px;flex-shrink:0;}
+.item-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--sand-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:background .2s,border-color .2s;}
+.item-check.done{background:var(--teal);border-color:var(--teal);color:white;}
+.floating-submit-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--coral),var(--coral-light));color:white;border:none;border-radius:20px;padding:16px 32px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(232,97,74,.45);white-space:nowrap;transition:transform .15s;z-index:100;max-width:380px;width:calc(100% - 48px);}
+.floating-submit-btn:active{transform:translateX(-50%) scale(.97);}
+
+/* ── ITEM DETAIL ── */
+#screen-item-detail{background:var(--warm-white);}
+.item-detail-header{padding:72px 24px 28px;color:white;position:relative;}
+.item-detail-icon{font-size:64px;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));}
+.item-detail-header h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;line-height:1.2;margin-bottom:4px;}
+.item-pts{background:rgba(212,169,74,.25);color:var(--gold);display:inline-block;padding:4px 12px;border-radius:10px;font-size:13px;font-weight:600;margin-top:8px;}
+.info-card{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.info-card-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;}
+.info-card p{font-size:14px;color:var(--text-dark);line-height:1.65;}
+.hint-card{background:linear-gradient(135deg,#fff8e6,#fff3d0);border-radius:18px;padding:18px;margin-bottom:14px;border:1px solid #ffe9a0;display:flex;gap:12px;align-items:flex-start;}
+.hint-text{font-size:13px;color:#7a5a00;line-height:1.6;font-weight:500;}
+.photo-zone{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center;}
+.photo-preview{width:100%;height:220px;border-radius:14px;object-fit:cover;margin-bottom:14px;display:none;}
+.photo-preview.has-photo{display:block;}
+.camera-placeholder{width:100%;height:180px;border-radius:14px;background:linear-gradient(135deg,var(--sand),var(--sand-dark));display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:14px;border:2px dashed var(--sand-dark);}
+.camera-placeholder-icon{font-size:48px;margin-bottom:8px;}
+.camera-placeholder-text{font-size:13px;color:var(--text-light);}
+.camera-btn{width:100%;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s;margin-bottom:10px;}
+.camera-btn:active{transform:scale(.98);}
+.retake-btn{background:none;border:none;color:var(--text-light);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;}
+.mark-complete-btn{width:100%;background:linear-gradient(135deg,var(--teal),#1aad9a);color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s;margin-top:8px;}
+.mark-complete-btn:active{transform:scale(.98);}
+.mark-complete-btn:disabled{opacity:.5;cursor:not-allowed;}
+.already-done-banner{background:linear-gradient(135deg,var(--teal),#1aad9a);border-radius:14px;padding:14px 18px;color:white;display:flex;align-items:center;gap:12px;font-weight:600;font-size:14px;}
+
+/* ── CERTIFICATE SCREEN ── */
+#screen-certificate{background:var(--warm-white);}
+.cert-header{background:linear-gradient(160deg,var(--ocean) 0%,var(--ocean-mid) 50%,var(--teal) 100%);padding:56px 24px 40px;color:white;text-align:center;position:relative;}
+.cert-header-icon{font-size:64px;display:block;margin-bottom:12px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.25));}
+.cert-eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:6px;}
+.cert-header h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;line-height:1.15;}
+.cert-hunt-name{font-size:14px;color:rgba(255,255,255,.75);margin-top:6px;}
+
+/* REWARD TIER BADGE */
+.reward-tier-display{margin:0 16px;transform:translateY(-28px);}
+.reward-tier-card{border-radius:20px;padding:20px 24px;display:flex;align-items:center;gap:18px;box-shadow:0 6px 24px rgba(0,0,0,.12);}
+.tier-medal-large{font-size:52px;line-height:1;}
+.tier-card-text{flex:1;}
+.tier-card-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.tier-card-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;line-height:1;}
+.tier-card-reward{font-size:13px;margin-top:6px;line-height:1.4;font-weight:500;}
+
+/* CERTIFICATE BODY */
+.cert-body{padding:0 16px 16px;}
+.cert-info-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.cert-stat{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.cert-stat-value{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--text-dark);line-height:1;}
+.cert-stat-label{font-size:11px;color:var(--text-light);margin-top:3px;}
+.cert-stat-sub{font-size:12px;color:var(--text-mid);margin-top:4px;font-weight:500;}
+
+/* VERIFICATION CODE */
+.verification-card{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.verification-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;}
+.code-box{background:var(--sand);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;border:2px dashed var(--sand-dark);}
+.code-text{font-family:monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:var(--ocean);word-break:break-all;}
+.code-sub{font-size:11px;color:var(--text-light);margin-top:6px;}
+.qr-area{background:white;border:2px solid var(--sand-dark);border-radius:12px;padding:12px;display:inline-block;margin-bottom:8px;}
+#qr-canvas{display:block;}
+
+/* CHAMBER INSTRUCTIONS */
+.chamber-card{background:linear-gradient(135deg,#f0f8f5,#e0f5ef);border:1px solid #a0d8c8;border-radius:18px;padding:20px;margin-bottom:14px;}
+.chamber-card-title{font-weight:700;font-size:14px;color:var(--ocean);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.chamber-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+.step-num{width:22px;height:22px;background:var(--teal);border-radius:50%;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-text{font-size:13px;color:var(--text-dark);line-height:1.5;}
+.chamber-address{background:rgba(255,255,255,.7);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text-mid);text-align:center;margin-top:6px;}
+
+/* LEADERBOARD */
+.leaderboard-section{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.leaderboard-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:14px;}
+.leaderboard-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--sand);}
+.leaderboard-item:last-child{border-bottom:none;}
+.lb-rank{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;width:32px;text-align:center;flex-shrink:0;}
+.lb-rank.gold-rank{color:var(--gold);}
+.lb-rank.silver-rank{color:#9db8c8;}
+.lb-rank.bronze-rank{color:#c8a870;}
+.lb-name{flex:1;font-weight:600;font-size:14px;}
+.lb-time{font-size:13px;color:var(--text-mid);}
+.lb-you{background:var(--teal);color:white;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;}
+
+/* ── GLOBAL LEADERBOARD SCREEN ── */
+#screen-leaderboard{background:var(--warm-white);}
+.lb-screen-header{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);padding:56px 24px 0;color:white;position:relative;}
+.lb-screen-header h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;margin-bottom:4px;}
+.lb-screen-header p{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:20px;}
+.lb-tab-row{display:flex;gap:0;}
+.lb-tab{flex:1;padding:12px 8px;background:transparent;border:none;color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:color .2s;border-bottom:3px solid transparent;}
+.lb-tab.active{color:white;border-bottom-color:var(--teal);}
+.podium-section{background:linear-gradient(180deg,var(--ocean-mid) 0%,var(--warm-white) 55%);padding:28px 20px 0;display:flex;align-items:flex-end;justify-content:center;gap:12px;}
+.podium-col{display:flex;flex-direction:column;align-items:center;}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-family:'DM Sans',sans-serif;border:3px solid rgba(255,255,255,.5);box-shadow:0 4px 16px rgba(0,0,0,.25);flex-shrink:0;}
+.podium-crown{font-size:18px;margin-bottom:5px;animation:float 2.5s ease-in-out infinite;}
+.podium-name{font-size:12px;font-weight:700;color:var(--text-dark);margin-top:7px;text-align:center;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.podium-pts{font-size:11px;color:var(--text-light);margin-top:1px;text-align:center;}
+.podium-block{border-radius:12px 12px 0 0;width:84px;display:flex;align-items:center;justify-content:center;}
+.podium-rank-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;}
+.podium-1st .podium-avatar{width:68px;height:68px;font-size:22px;}
+.podium-1st .podium-block{height:88px;background:linear-gradient(180deg,#d4a94a,#a07820);}
+.podium-1st .podium-rank-num{color:#fff8d0;}
+.podium-2nd .podium-avatar{width:58px;height:58px;font-size:18px;}
+.podium-2nd .podium-block{height:68px;background:linear-gradient(180deg,#9db8c8,#6a8898);}
+.podium-2nd .podium-rank-num{color:#edf4f8;}
+.podium-3rd .podium-avatar{width:52px;height:52px;font-size:16px;}
+.podium-3rd .podium-block{height:52px;background:linear-gradient(180deg,#c89060,#906040);}
+.podium-3rd .podium-rank-num{color:#fff0e0;}
+.your-rank-card{margin:16px 16px 0;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));border-radius:18px;padding:18px 20px;color:white;display:flex;align-items:center;gap:16px;}
+.your-rank-num{font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1;flex-shrink:0;}
+.your-rank-label{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+.your-rank-name{font-size:16px;font-weight:700;}
+.your-rank-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;line-height:1.4;}
+.lb-filter-row{display:flex;gap:8px;padding:16px 16px 4px;overflow-x:auto;scrollbar-width:none;}
+.lb-filter-row::-webkit-scrollbar{display:none;}
+.lb-filter-chip{background:var(--sand);border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text-mid);cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:background .15s,color .15s;flex-shrink:0;}
+.lb-filter-chip.active{background:var(--ocean);color:white;}
+.lb-list-section{padding:8px 16px 100px;}
+.lb-list-item{background:white;border-radius:16px;margin-bottom:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.lb-list-item.is-you{border:2px solid var(--teal);background:linear-gradient(135deg,#f0faf8,white);}
+.lb-num{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;width:28px;text-align:center;flex-shrink:0;color:var(--text-light);}
+.lb-avatar-sm{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-family:'DM Sans',sans-serif;font-size:16px;flex-shrink:0;}
+.lb-info{flex:1;min-width:0;}
+.lb-info-name{font-weight:700;font-size:15px;color:var(--text-dark);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.lb-you-tag{background:var(--teal);color:white;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;letter-spacing:.5px;}
+.lb-info-sub{font-size:12px;color:var(--text-light);margin-top:2px;}
+.lb-pts-col{text-align:right;flex-shrink:0;}
+.lb-pts-val{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--gold-dark);line-height:1;}
+.lb-pts-lbl{font-size:10px;color:var(--text-light);}
+.lb-badge-row{display:flex;gap:3px;margin-top:4px;}
+.lb-badge{font-size:13px;}
+.lb-nav-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));color:white;border:none;border-radius:20px;padding:14px 32px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(11,61,94,.35);z-index:100;white-space:nowrap;max-width:380px;width:calc(100% - 48px);}
+
+
+/* ── NORMAL COMPLETION (FREE HUNTS) ── */
+#screen-complete{background:linear-gradient(170deg,var(--ocean) 0%,var(--ocean-mid) 40%,var(--teal) 100%);color:white;align-items:center;text-align:center;padding:60px 28px 48px;}
+.confetti-emoji{font-size:72px;display:block;margin-bottom:16px;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.complete-title{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;line-height:1.1;margin-bottom:8px;}
+.complete-stats{background:rgba(255,255,255,.12);border-radius:24px;padding:28px;width:100%;margin:20px 0 28px;backdrop-filter:blur(8px);}
+.complete-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.complete-stat-value{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;color:var(--gold);line-height:1;}
+.complete-stat-label{font-size:12px;color:rgba(255,255,255,.65);margin-top:4px;}
+.upgrade-prompt{background:rgba(212,169,74,.2);border:1px solid rgba(212,169,74,.4);border-radius:20px;padding:20px;width:100%;margin-bottom:20px;}
+.upgrade-prompt-title{font-weight:700;font-size:15px;margin-bottom:6px;}
+.upgrade-prompt-text{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:14px;}
+
+/* ── BOTTOM NAV ── */
+#bottom-nav{
+  display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:200;
+  padding:0 12px max(16px,env(safe-area-inset-bottom)) 12px;
+  pointer-events:none;
+}
+body.nav-visible #bottom-nav{display:block;}
+.nav-bar{
+  background:rgba(15,35,55,.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 8px 32px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  padding:8px 6px;
+  display:flex;
+  pointer-events:all;
+  position:relative;
+}
+/* Sliding active pill */
+.nav-pill{
+  position:absolute;
+  top:8px;height:calc(100% - 16px);
+  background:linear-gradient(135deg,var(--ocean-light),var(--teal));
+  border-radius:20px;
+  transition:left .3s cubic-bezier(.34,1.56,.64,1), width .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 16px rgba(34,197,176,.4);
+  z-index:0;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 4px 6px;cursor:pointer;background:none;border:none;
+  font-family:'DM Sans',sans-serif;position:relative;z-index:1;
+  border-radius:20px;transition:transform .15s;
+}
+.nav-item:active{transform:scale(.88);}
+.nav-icon-wrap{
+  width:34px;height:34px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;line-height:1;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), background .25s;
+}
+.nav-label{
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.4);
+  letter-spacing:.4px;transition:color .25s;white-space:nowrap;
+  text-transform:uppercase;
+}
+.nav-item.active .nav-icon-wrap{transform:translateY(-2px) scale(1.08);}
+.nav-item.active .nav-label{color:white;}
+/* Push scrollable content above nav */
+body.nav-visible #screen-hunts .screen-body,
+body.nav-visible #screen-leaderboard .lb-list-section,
+body.nav-visible #screen-progress .screen-body,
+body.nav-visible #screen-profile .screen-body{padding-bottom:100px;}
+
+
+/* ── PROGRESS SCREEN ── */
+#screen-progress{background:var(--warm-white);}
+.progress-screen-header{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);padding:52px 24px 28px;color:white;}
+.progress-screen-header h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:16px;}
+.progress-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.progress-stat-box{background:rgba(255,255,255,.12);border-radius:14px;padding:12px;text-align:center;backdrop-filter:blur(6px);}
+.progress-stat-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--gold);line-height:1;}
+.progress-stat-lbl{font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;letter-spacing:.5px;}
+.progress-hunt-card{background:white;border-radius:18px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);cursor:pointer;transition:transform .15s;display:flex;align-items:center;gap:14px;}
+.progress-hunt-card:active{transform:scale(.98);}
+.progress-hunt-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.progress-hunt-info{flex:1;min-width:0;}
+.progress-hunt-name{font-weight:700;font-size:15px;color:var(--text-dark);margin-bottom:2px;}
+.progress-hunt-meta{font-size:12px;color:var(--text-light);margin-bottom:8px;}
+.progress-mini-bar{height:6px;background:var(--sand-dark);border-radius:3px;overflow:hidden;}
+.progress-mini-fill{height:100%;border-radius:3px;transition:width .4s;}
+.progress-hunt-pts{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--gold-dark);flex-shrink:0;text-align:right;}
+.progress-hunt-pts-lbl{font-size:10px;color:var(--text-light);text-align:right;}
+.progress-empty{text-align:center;padding:40px 24px;color:var(--text-light);}
+
+/* ── PROFILE SCREEN ── */
+#screen-profile{background:var(--warm-white);}
+.profile-header{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);padding:52px 24px 36px;color:white;text-align:center;}
+.profile-avatar{width:88px;height:88px;border-radius:28px;background:linear-gradient(135deg,var(--teal),#1aad9a);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:white;margin:0 auto 14px;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+.profile-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;}
+.profile-title{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;}
+.profile-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.15);border-radius:16px;overflow:hidden;margin-top:20px;}
+.profile-stat{background:rgba(255,255,255,.1);padding:14px 8px;text-align:center;}
+.profile-stat-val{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--gold);line-height:1;}
+.profile-stat-lbl{font-size:10px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.5px;}
+.profile-section{background:white;border-radius:18px;margin:0 16px 14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.profile-section-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.profile-field{margin-bottom:16px;}
+.profile-field:last-child{margin-bottom:0;}
+.profile-field-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-mid);margin-bottom:6px;}
+.profile-field-input{width:100%;padding:13px 16px;border:2px solid var(--sand-dark);border-radius:12px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:white;outline:none;transition:border-color .2s;}
+.profile-field-input:focus{border-color:var(--ocean-light);}
+.profile-field-select{width:100%;padding:13px 16px;border:2px solid var(--sand-dark);border-radius:12px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233d5a6e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center;appearance:none;outline:none;}
+.save-profile-btn{width:100%;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .15s;}
+.save-profile-btn:active{transform:scale(.98);}
+.achievement-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.achievement-item{text-align:center;padding:12px 6px;background:var(--sand);border-radius:14px;}
+.achievement-icon{font-size:26px;margin-bottom:4px;}
+.achievement-name{font-size:10px;font-weight:600;color:var(--text-mid);line-height:1.3;}
+.achievement-item.locked{opacity:.35;filter:grayscale(1);}
+.unlocked-hunt-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--sand);}
+.unlocked-hunt-row:last-child{border-bottom:none;}
+.danger-btn{width:100%;background:transparent;color:var(--coral);border:2px solid var(--coral);border-radius:14px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.danger-btn:active{background:#fff0ee;}
+
+/* ── PRESENTATION MODE (Show Staff) ── */
+#presentation-overlay{display:none;position:fixed;inset:0;z-index:999;background:#f8fbff;overflow-y:auto;max-width:430px;left:50%;transform:translateX(-50%);}
+#presentation-overlay.open{display:block;}
+.pres-header{background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));padding:20px 24px 24px;color:white;text-align:center;}
+.pres-chamber-logo{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:8px;}
+.pres-hunt-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;line-height:1.2;margin-bottom:4px;}
+.pres-user-name{font-size:15px;color:rgba(255,255,255,.8);}
+.pres-tier-banner{padding:18px 24px;display:flex;align-items:center;gap:14px;}
+.pres-tier-medal{font-size:48px;line-height:1;}
+.pres-tier-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:3px;}
+.pres-tier-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--text-dark);}
+.pres-tier-reward{font-size:13px;color:var(--text-mid);margin-top:3px;line-height:1.4;}
+.pres-qr-section{padding:0 24px 20px;text-align:center;}
+.pres-qr-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:14px;}
+.pres-qr-box{background:white;border-radius:20px;padding:20px;display:inline-block;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:16px;}
+.pres-code-display{background:var(--ocean);border-radius:14px;padding:14px 20px;display:inline-block;margin-bottom:6px;}
+.pres-code-text{font-family:monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:white;}
+.pres-code-sub{font-size:11px;color:var(--text-light);margin-top:4px;}
+.pres-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 24px 20px;}
+.pres-stat{background:white;border-radius:14px;padding:14px 10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.pres-stat-val{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--ocean);line-height:1;}
+.pres-stat-lbl{font-size:10px;color:var(--text-light);margin-top:3px;letter-spacing:.5px;}
+.pres-photos-section{padding:0 24px 20px;}
+.pres-photos-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;}
+.pres-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pres-photo-card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.pres-photo-img{width:100%;height:110px;object-fit:cover;display:block;}
+.pres-photo-placeholder{width:100%;height:110px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.pres-photo-info{padding:8px 10px;}
+.pres-photo-name{font-size:12px;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pres-photo-time{font-size:10px;color:var(--text-light);margin-top:1px;}
+.pres-photo-check{font-size:10px;font-weight:700;color:var(--green-isle);}
+.pres-exit-btn{position:sticky;bottom:0;width:100%;padding:16px 24px 24px;background:linear-gradient(transparent,#f8fbff 40%);}
+.pres-exit-inner{background:var(--ocean);color:white;border:none;border-radius:16px;padding:16px 32px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;}
+
+#camera-container{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:1000;flex-direction:column;align-items:center;justify-content:center;max-width:430px;margin:0 auto;}
+#camera-container.visible{display:flex;}
+#camera-video{width:100%;height:100%;object-fit:cover;}
+.camera-ui-overlay{position:absolute;bottom:0;left:0;right:0;padding:32px 32px 48px;background:linear-gradient(transparent,rgba(0,0,0,.7));display:flex;flex-direction:column;align-items:center;gap:16px;}
+.camera-capture-btn{width:72px;height:72px;border-radius:50%;background:white;border:4px solid rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:transform .1s;}
+.camera-capture-btn:active{transform:scale(.9);}
+.camera-close-btn{position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);border:none;color:white;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;backdrop-filter:blur(4px);z-index:10;}
+.camera-item-label{color:rgba(255,255,255,.9);font-size:14px;font-weight:500;text-align:center;background:rgba(0,0,0,.4);padding:8px 16px;border-radius:10px;backdrop-filter:blur(4px);}
+#camera-canvas{display:none;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text-dark);color:white;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:500;z-index:500;opacity:0;transition:opacity .3s,transform .3s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── UTILS ── */
+.scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.grad-ocean{background:linear-gradient(135deg,var(--ocean) 0%,var(--ocean-mid) 100%);}
+.grad-teal{background:linear-gradient(135deg,#0e7060 0%,var(--teal) 100%);}
+.grad-coral{background:linear-gradient(135deg,var(--coral) 0%,#f5a07b 100%);}
+.grad-gold{background:linear-gradient(135deg,var(--gold-dark) 0%,var(--gold) 100%);}
+.grad-forest{background:linear-gradient(135deg,#1a5c2a 0%,var(--green-isle) 100%);}
+.grad-event{background:linear-gradient(135deg,#7a1a1a 0%,#c0392b 100%);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════ WELCOME ════════ -->
+<div id="screen-welcome" class="screen active">
+  <div class="welcome-top">
+    <span class="lighthouse-icon">🏝️</span>
+    <div class="welcome-eyebrow">Block Island App Presents</div>
+    <div class="welcome-title">Island<br><span>Scavenger</span><br>Hunt</div>
+    <div class="welcome-subtitle">Explore Block Island's hidden gems,<br>wildlife & local flavors through your lens.</div>
+  </div>
+  <div class="ocean-scene"><div class="wave"></div><div class="wave"></div></div>
+  <div class="welcome-card">
+    <div style="width:100%">
+      <div class="hunt-count-badges">
+        <div class="hunt-count-badge">🆓 5 Free Hunts</div>
+        <div class="hunt-count-badge">⭐ Premium Hunts</div>
+        <div class="hunt-count-badge">🏆 Chamber Rewards</div>
+      </div>
+      <button class="btn-primary" onclick="showScreen('register')">🚀 Start Exploring</button>
+      <button class="btn-secondary" onclick="skipRegister()">Continue as Guest</button>
+      <div class="privacy-note">No account needed · Photos stay on your device</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ REGISTER ════════ -->
+<div id="screen-register" class="screen">
+  <div class="screen-header grad-ocean">
+    <button class="back-btn" onclick="showScreen('welcome')">←</button>
+    <h2>Let's Get You Started</h2>
+    <p>A quick intro so we can track your progress and celebrate your discoveries!</p>
+  </div>
+  <div class="screen-body scrollable">
+    <div class="form-group">
+      <label class="form-label">Your Name</label>
+      <input class="form-input" id="reg-name" type="text" placeholder="Explorer name" autocomplete="given-name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email (optional — for prize notifications)</label>
+      <input class="form-input" id="reg-email" type="email" placeholder="you@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Party Size</label>
+      <select class="form-select" id="reg-party">
+        <option value="1">Just me</option>
+        <option value="2">2 people</option>
+        <option value="3-4" selected>3–4 people</option>
+        <option value="5+">5+ people</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Length of Visit</label>
+      <select class="form-select" id="reg-duration">
+        <option value="day">Day trip</option>
+        <option value="weekend" selected>Weekend</option>
+        <option value="week">Full week</option>
+        <option value="longer">Longer stay</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="completeRegister()" style="margin-top:8px;">Explore Hunts →</button>
+    <div class="privacy-note">Photos are stored locally on your device only. Your email is only used for prize/event notifications.</div>
+  </div>
+</div>
+
+<!-- ════════ HUNT LIST ════════ -->
+<div id="screen-hunts" class="screen">
+  <div class="hunts-header grad-ocean">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+      <div class="greeting" id="hunts-greeting">Welcome, Explorer!</div>
+      <button onclick="showLeaderboard()" style="background:rgba(255,255,255,.15);border:none;color:white;border-radius:12px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px);">🏆 Leaderboard</button>
+    </div>
+    <h2>Choose Your<br>Adventure</h2>
+    <div class="progress-overview">
+      <div>
+        <div class="points-big" id="total-points-display">0</div>
+        <div class="points-label">Total Points</div>
+      </div>
+      <div class="divider-v"></div>
+      <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;" id="hunts-progress-text">Start a hunt to begin earning points and island rewards!</div>
+    </div>
+  </div>
+  <div class="screen-body scrollable" style="padding-top:8px;">
+
+    <!-- PREMIUM SECTION -->
+    <div class="section-header-row" style="cursor:pointer;" onclick="toggleSection('premium')">
+      <div>
+        <div class="section-label" style="color:var(--gold-dark);">⭐ Premium Hunts</div>
+        <div class="section-sub">Unlock for $9.99 · Win real Chamber rewards</div>
+      </div>
+      <button class="section-toggle-btn" id="toggle-btn-premium">▼</button>
+    </div>
+    <div class="section-collapsible" id="section-premium">
+      <div id="premium-hunt-cards-container"></div>
+    </div>
+
+    <!-- FREE SECTION -->
+    <div class="section-header-row" style="cursor:pointer;" onclick="toggleSection('free')">
+      <div>
+        <div class="section-label">🆓 Free Hunts</div>
+        <div class="section-sub">Always free · Explore at your own pace</div>
+      </div>
+      <button class="section-toggle-btn" id="toggle-btn-free">▼</button>
+    </div>
+    <div class="section-collapsible" id="section-free">
+      <div id="hunt-cards-container"></div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- ════════ HUNT PREVIEW (PREMIUM) ════════ -->
+<div id="screen-hunt-preview" class="screen">
+  <div class="preview-header" id="preview-header">
+    <button class="back-btn" onclick="showScreen('hunts')">←</button>
+    <span class="preview-emoji" id="preview-emoji">⭐</span>
+    <h2 id="preview-title">Hunt Title</h2>
+    <p class="preview-desc" id="preview-desc">Description</p>
+    <div class="preview-meta-chips" id="preview-chips"></div>
+    <div id="preview-countdown-box" style="display:none;" class="event-countdown-box">
+      <div class="event-countdown-label">⏱ Event Ends In</div>
+      <div class="event-countdown-time" id="preview-countdown">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- Event grand prize -->
+  <div id="preview-grand-prize" style="display:none;padding:0 16px 16px;">
+    <div class="event-grand-prize">
+      <div class="grand-prize-trophy">🏆</div>
+      <div>
+        <div class="grand-prize-label">🥇 1st Place Grand Prize</div>
+        <div class="grand-prize-value" id="preview-grand-prize-value">$500 Prize Pack</div>
+        <div class="grand-prize-sub" id="preview-grand-prize-sub">Verified by the Chamber of Commerce</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-body scrollable" style="padding-top:8px;padding-bottom:120px;">
+    <div class="prize-tiers-section">
+      <div class="prize-tiers-title">🎁 Reward Tiers — Present at the Chamber to Claim</div>
+      <div id="preview-prize-tiers"></div>
+    </div>
+    <!-- Leaderboard preview for events -->
+    <div id="preview-leaderboard" style="display:none;" class="prize-tiers-section">
+      <div class="prize-tiers-title">📊 Current Leaderboard</div>
+      <div id="preview-leaderboard-items"></div>
+    </div>
+    <div class="prize-tiers-section">
+      <div class="prize-tiers-title">📍 What's In This Hunt</div>
+      <div id="preview-items-list"></div>
+    </div>
+  </div>
+
+  <div class="unlock-btn-area">
+    <div class="price-breakdown">
+      <div class="price-left" id="preview-price-label">Flat entry fee · One time</div>
+      <div class="price-right" id="preview-price-display">$9.99</div>
+    </div>
+    <button class="btn-gold" id="preview-unlock-btn" onclick="initiatePayment()">🔓 Unlock This Hunt</button>
+    <div class="privacy-note" style="margin-top:8px;">Secure payment · Instant access · No subscription</div>
+  </div>
+</div>
+
+<!-- ════════ HUNT DETAIL ════════ -->
+<div id="screen-hunt-detail" class="screen">
+  <div class="hunt-detail-header" id="hunt-detail-header">
+    <button class="back-btn" onclick="showScreen('hunts')">←</button>
+    <span class="hunt-emoji-large" id="hunt-detail-emoji">🗺️</span>
+    <h2 id="hunt-detail-title">Hunt Title</h2>
+    <p class="desc" id="hunt-detail-desc">Description</p>
+    <div class="hunt-stats-row">
+      <div class="hunt-stat-chip">📍 <span id="hunt-detail-items">0</span> items</div>
+      <div class="hunt-stat-chip">⭐ <span id="hunt-detail-points">0</span> pts</div>
+      <div class="hunt-stat-chip" id="hunt-detail-diff-chip">Easy</div>
+      <div class="hunt-stat-chip timer-chip" id="hunt-timer-chip" style="display:none;">⏱ <span id="hunt-timer-display">00:00</span></div>
+    </div>
+  </div>
+  <div class="items-list scrollable" id="hunt-items-list"></div>
+  <button class="floating-submit-btn" id="hunt-submit-btn" onclick="showHuntComplete()">🏁 View Progress</button>
+</div>
+
+<!-- ════════ ITEM DETAIL ════════ -->
+<div id="screen-item-detail" class="screen">
+  <div class="item-detail-header" id="item-detail-header">
+    <button class="back-btn" id="item-back-btn" onclick="backToHunt()">←</button>
+    <span class="item-detail-icon" id="item-detail-icon">🗺️</span>
+    <h2 id="item-detail-title">Item Title</h2>
+    <div id="item-detail-location" style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;"></div>
+    <div class="item-pts" id="item-detail-pts">+50 pts</div>
+  </div>
+  <div class="screen-body scrollable" id="item-detail-body"></div>
+</div>
+
+<!-- ════════ CERTIFICATE (PREMIUM COMPLETION) ════════ -->
+<div id="screen-certificate" class="screen">
+  <div class="cert-header">
+    <button class="back-btn" onclick="backToHunt()">←</button>
+    <span class="cert-header-icon" id="cert-header-icon">🏆</span>
+    <div class="cert-eyebrow">Official Certificate of Completion</div>
+    <h2 id="cert-title">Hunt Complete!</h2>
+    <div class="cert-hunt-name" id="cert-hunt-name">The Seafarer's Challenge</div>
+  </div>
+
+  <!-- Reward tier pops out of header -->
+  <div class="reward-tier-display">
+    <div class="reward-tier-card" id="cert-tier-card">
+      <div class="tier-medal-large" id="cert-tier-medal">🥇</div>
+      <div class="tier-card-text">
+        <div class="tier-card-label" id="cert-tier-label">REWARD TIER</div>
+        <div class="tier-card-name" id="cert-tier-name">Gold Islander</div>
+        <div class="tier-card-reward" id="cert-tier-reward">$25 dining credit at a participating restaurant</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cert-body scrollable" style="padding-top:0;">
+    <div class="cert-info-row">
+      <div class="cert-stat">
+        <div class="cert-stat-value" id="cert-points">0</div>
+        <div class="cert-stat-label">Points Earned</div>
+        <div class="cert-stat-sub" id="cert-points-pct">of 0 possible</div>
+      </div>
+      <div class="cert-stat">
+        <div class="cert-stat-value" id="cert-items">0/0</div>
+        <div class="cert-stat-label">Items Found</div>
+        <div class="cert-stat-sub" id="cert-date">Today</div>
+      </div>
+    </div>
+
+    <!-- Verification -->
+    <div class="verification-card">
+      <div class="verification-label">✅ Verification Code — Show at Chamber</div>
+      <div class="code-box">
+        <div class="code-text" id="cert-code">BI-XXXX-XXXXX</div>
+        <div class="code-sub">Manual backup code — read aloud if QR won't scan</div>
+      </div>
+      <div style="text-align:center;margin-bottom:14px;">
+        <div class="qr-area"><div id="qr-div"></div></div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:8px;">Scan with Chamber tablet · or use code above</div>
+      </div>
+      <button onclick="showPresentationMode()" style="width:100%;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));color:white;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
+        📲 Show Staff Verification Screen
+      </button>
+      <button onclick="copyCode()" style="width:100%;background:var(--sand);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:600;color:var(--ocean);cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copy Verification Code</button>
+    </div>
+
+    <!-- Chamber instructions -->
+    <div class="chamber-card">
+      <div class="chamber-card-title">🏛️ How to Claim Your Reward</div>
+      <div class="chamber-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Visit the <strong>Block Island Chamber of Commerce</strong> during open hours.</div>
+      </div>
+      <div class="chamber-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Show your <strong>verification code</strong> or QR code to a staff member.</div>
+      </div>
+      <div class="chamber-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Staff verifies your completion and hands you your <strong id="chamber-reward-name">reward</strong>!</div>
+      </div>
+      <div class="chamber-address">📍 Block Island Chamber of Commerce<br>Water Street, Old Harbor · Mon–Fri 9am–5pm, Sat 10am–3pm</div>
+    </div>
+
+    <!-- Event leaderboard -->
+    <div id="cert-leaderboard" style="display:none;" class="leaderboard-section">
+      <div class="leaderboard-title">📊 Event Leaderboard</div>
+      <div id="cert-leaderboard-items"></div>
+    </div>
+
+    <!-- Share + next actions -->
+    <div style="background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+      <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;">📤 Share Your Achievement</div>
+      <div style="font-size:13px;color:var(--text-mid);line-height:1.5;margin-bottom:14px;" id="cert-share-text"></div>
+      <button onclick="shareResults()" style="width:100%;background:linear-gradient(135deg,var(--coral),var(--coral-light));color:white;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Share Results →</button>
+    </div>
+
+    <button class="btn-primary" onclick="showScreen('hunts')" style="margin-bottom:12px;">Try Another Hunt 🗺️</button>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- ════════ FREE HUNT COMPLETION ════════ -->
+<div id="screen-complete" class="screen">
+  <span class="confetti-emoji">🎉</span>
+  <div class="complete-title">You're a Block Island<br><em style="color:var(--teal);">Explorer!</em></div>
+  <p style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin-top:8px;margin-bottom:0;" id="complete-subtitle"></p>
+  <div class="complete-stats">
+    <div class="complete-stats-grid">
+      <div><div class="complete-stat-value" id="complete-points">0</div><div class="complete-stat-label">Points Earned</div></div>
+      <div><div class="complete-stat-value" id="complete-items">0</div><div class="complete-stat-label">Items Found</div></div>
+      <div><div class="complete-stat-value" id="complete-photos">0</div><div class="complete-stat-label">Photos Taken</div></div>
+      <div><div class="complete-stat-value" id="complete-rank">🌊</div><div class="complete-stat-label">Explorer Rank</div></div>
+    </div>
+  </div>
+  <div class="upgrade-prompt">
+    <div class="upgrade-prompt-title">⭐ Ready for Real Rewards?</div>
+    <div class="upgrade-prompt-text">Unlock a Weekly or Monthly Hunt for $9.99 and earn Chamber of Commerce prizes — up to $50 in island dining, gifts & experiences!</div>
+    <button onclick="showScreen('hunts')" style="width:100%;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:white;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">See Premium Hunts ⭐</button>
+  </div>
+  <button class="btn-primary" onclick="showScreen('hunts')" style="width:100%;background:rgba(255,255,255,.15);border:none;margin-bottom:0;">Try Another Hunt 🗺️</button>
+</div>
+
+<!-- ════════ GLOBAL LEADERBOARD ════════ -->
+<div id="screen-leaderboard" class="screen">
+  <div class="lb-screen-header">
+    <button class="back-btn" onclick="showScreen('hunts')">←</button>
+    <h2>🏆 Leaderboard</h2>
+    <p>Top explorers on Block Island this season</p>
+    <div class="lb-tab-row">
+      <button class="lb-tab active" id="lb-tab-all" onclick="setLbTab('all')">All Time</button>
+      <button class="lb-tab" id="lb-tab-week" onclick="setLbTab('week')">This Week</button>
+      <button class="lb-tab" id="lb-tab-premium" onclick="setLbTab('premium')">Premium</button>
+    </div>
+  </div>
+
+  <!-- Podium top 3 -->
+  <div class="podium-section" id="lb-podium"></div>
+
+  <!-- Your rank card -->
+  <div class="your-rank-card" id="lb-your-rank">
+    <div class="your-rank-num" id="lb-your-num">#–</div>
+    <div>
+      <div class="your-rank-label">Your Ranking</div>
+      <div class="your-rank-name" id="lb-your-name">Start exploring!</div>
+      <div class="your-rank-sub" id="lb-your-sub">Earn points to climb the leaderboard</div>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="lb-filter-row" id="lb-filter-row">
+    <button class="lb-filter-chip active" onclick="setLbFilter('all',this)">All Hunts</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('explorer',this)">🗺️ Explorer</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('nature',this)">🦅 Nature</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('history',this)">🏛️ History</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('foodie',this)">🦞 Foodie</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('thrill',this)">🏄 Thrill</button>
+    <button class="lb-filter-chip" onclick="setLbFilter('premium',this)">⭐ Premium</button>
+  </div>
+
+  <!-- Ranked list (4th place onward) -->
+  <div class="lb-list-section" id="lb-list"></div>
+</div>
+
+<!-- ════════ PROGRESS SCREEN ════════ -->
+<div id="screen-progress" class="screen">
+  <div class="progress-screen-header">
+    <h2>My Progress</h2>
+    <div class="progress-stat-row">
+      <div class="progress-stat-box">
+        <div class="progress-stat-val" id="prog-total-pts">0</div>
+        <div class="progress-stat-lbl">TOTAL PTS</div>
+      </div>
+      <div class="progress-stat-box">
+        <div class="progress-stat-val" id="prog-items-found">0</div>
+        <div class="progress-stat-lbl">ITEMS FOUND</div>
+      </div>
+      <div class="progress-stat-box">
+        <div class="progress-stat-val" id="prog-hunts-done">0</div>
+        <div class="progress-stat-lbl">HUNTS DONE</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-body scrollable" id="progress-body"></div>
+</div>
+
+<!-- ════════ PROFILE SCREEN ════════ -->
+<div id="screen-profile" class="screen">
+  <div class="profile-header">
+    <div class="profile-avatar" id="profile-avatar-initials">EX</div>
+    <div class="profile-name" id="profile-display-name">Explorer</div>
+    <div class="profile-title" id="profile-display-title">Block Island Adventurer</div>
+    <div class="profile-stats-row">
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="profile-stat-pts">0</div>
+        <div class="profile-stat-lbl">POINTS</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="profile-stat-rank">#–</div>
+        <div class="profile-stat-lbl">RANK</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" id="profile-stat-hunts">0</div>
+        <div class="profile-stat-lbl">COMPLETED</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen-body scrollable">
+    <!-- Edit Info -->
+    <div class="profile-section">
+      <div class="profile-section-title">✏️ Edit Profile</div>
+      <div class="profile-field">
+        <div class="profile-field-label">Name</div>
+        <input class="profile-field-input" id="profile-name-input" type="text" placeholder="Your name">
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Email</div>
+        <input class="profile-field-input" id="profile-email-input" type="email" placeholder="you@email.com">
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Party Size</div>
+        <select class="profile-field-select" id="profile-party-select">
+          <option value="1">Just me</option>
+          <option value="2">2 people</option>
+          <option value="3-4">3–4 people</option>
+          <option value="5+">5+ people</option>
+        </select>
+      </div>
+      <div class="profile-field">
+        <div class="profile-field-label">Length of Visit</div>
+        <select class="profile-field-select" id="profile-duration-select">
+          <option value="day">Day trip</option>
+          <option value="weekend">Weekend</option>
+          <option value="week">Full week</option>
+          <option value="longer">Longer stay</option>
+        </select>
+      </div>
+      <button class="save-profile-btn" onclick="saveProfile()">Save Changes ✓</button>
+    </div>
+
+    <!-- Achievements -->
+    <div class="profile-section">
+      <div class="profile-section-title">🏅 Achievements</div>
+      <div class="achievement-grid" id="profile-achievements"></div>
+    </div>
+
+    <!-- Unlocked Premium Hunts -->
+    <div class="profile-section" id="profile-unlocked-section">
+      <div class="profile-section-title">⭐ My Premium Hunts</div>
+      <div id="profile-unlocked-list"></div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="profile-section">
+      <div class="profile-section-title" style="color:var(--coral);">⚠️ Reset</div>
+      <div style="font-size:13px;color:var(--text-mid);line-height:1.5;margin-bottom:14px;">Clear all hunt progress and photos. Your purchased hunts will remain unlocked.</div>
+      <button class="danger-btn" onclick="confirmReset()">Reset My Progress</button>
+    </div>
+
+    <div style="text-align:center;padding:16px;color:var(--text-light);font-size:12px;">
+      Block Island Scavenger Hunt · v1.0<br>
+      Powered by the Block Island App 🏝️
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app -->
+
+<!-- ════════ BOTTOM NAV ════════ -->
+<div id="bottom-nav">
+  <div class="nav-bar">
+    <div class="nav-pill" id="nav-pill"></div>
+    <button class="nav-item active" id="nav-hunts" onclick="navTo('hunts')">
+      <div class="nav-icon-wrap">🗺️</div>
+      <span class="nav-label">Hunts</span>
+    </button>
+    <button class="nav-item" id="nav-progress" onclick="navTo('progress')">
+      <div class="nav-icon-wrap">📊</div>
+      <span class="nav-label">Progress</span>
+    </button>
+    <button class="nav-item" id="nav-leaderboard" onclick="navTo('leaderboard')">
+      <div class="nav-icon-wrap">🏆</div>
+      <span class="nav-label">Leaders</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="navTo('profile')">
+      <div class="nav-icon-wrap">👤</div>
+      <span class="nav-label">Profile</span>
+    </button>
+  </div>
+</div>
+
+<!-- ════════ PRESENTATION MODE OVERLAY ════════ -->
+<div id="presentation-overlay">
+  <div class="pres-header">
+    <div class="pres-chamber-logo">🏛️ Block Island Chamber of Commerce — Verification</div>
+    <div class="pres-hunt-name" id="pres-hunt-name">Hunt Title</div>
+    <div class="pres-user-name" id="pres-user-name">Explorer Name</div>
+  </div>
+
+  <!-- Tier banner -->
+  <div class="pres-tier-banner" id="pres-tier-banner">
+    <div class="pres-tier-medal" id="pres-tier-medal">🥇</div>
+    <div>
+      <div class="pres-tier-label" id="pres-tier-label">REWARD TIER</div>
+      <div class="pres-tier-name" id="pres-tier-name">Gold Islander</div>
+      <div class="pres-tier-reward" id="pres-tier-reward">$25 dining credit</div>
+    </div>
+  </div>
+
+  <!-- QR + Code -->
+  <div class="pres-qr-section">
+    <div class="pres-qr-label">📷 Scan to Verify</div>
+    <div class="pres-qr-box"><div id="pres-qr-div"></div></div>
+    <div class="pres-code-display">
+      <div class="pres-code-text" id="pres-code-text">BI-XXXX-XXXXX</div>
+    </div>
+    <div class="pres-code-sub">Manual backup — read aloud if QR won't scan</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="pres-stats-row">
+    <div class="pres-stat"><div class="pres-stat-val" id="pres-pts">0</div><div class="pres-stat-lbl">POINTS</div></div>
+    <div class="pres-stat"><div class="pres-stat-val" id="pres-items">0/0</div><div class="pres-stat-lbl">ITEMS</div></div>
+    <div class="pres-stat"><div class="pres-stat-val" id="pres-photos-count">0</div><div class="pres-stat-lbl">PHOTOS</div></div>
+  </div>
+
+  <!-- Photo evidence grid -->
+  <div class="pres-photos-section">
+    <div class="pres-photos-label">📸 Photo Evidence</div>
+    <div class="pres-photo-grid" id="pres-photo-grid"></div>
+  </div>
+
+  <div class="pres-exit-btn">
+    <button class="pres-exit-inner" onclick="exitPresentationMode()">✕ Exit Presentation Mode</button>
+  </div>
+</div>
+
+<!-- ════════ PAYMENT MODAL ════════ -->
+<div id="payment-modal">
+  <div class="payment-backdrop" onclick="closePaymentModal()"></div>
+  <div class="payment-sheet">
+    <div class="payment-handle"></div>
+    <div id="payment-form-view">
+      <div class="payment-title">Unlock Hunt</div>
+      <div class="payment-subtitle">One-time fee · Instant access · Valid for this hunt period</div>
+      <div class="payment-summary">
+        <div>
+          <div class="payment-hunt-name" id="pay-hunt-name">The Seafarer's Challenge</div>
+          <div class="payment-hunt-type" id="pay-hunt-type">Weekly Hunt · Expires Sunday</div>
+        </div>
+        <div class="payment-price" id="pay-price">$9.99</div>
+      </div>
+      <!-- In production: replace below inputs with Stripe Elements -->
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">Card Number</label>
+        <input class="payment-input" id="pay-card" type="tel" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+      </div>
+      <div class="card-row">
+        <div>
+          <label class="form-label">Expiry</label>
+          <input class="payment-input" id="pay-expiry" type="tel" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)">
+        </div>
+        <div>
+          <label class="form-label">CVV</label>
+          <input class="payment-input" id="pay-cvv" type="tel" placeholder="123" maxlength="4">
+        </div>
+      </div>
+      <div class="secure-note">🔒 Secured by Stripe · Your card info is never stored</div>
+      <button class="btn-gold" onclick="processPayment()" id="pay-btn">🔓 Pay <span id="pay-btn-price">$9.99</span></button>
+    </div>
+    <div class="payment-processing" id="payment-processing-view">
+      <div class="spinner"></div>
+      <div style="font-weight:600;font-size:16px;color:var(--text-dark);margin-bottom:6px;">Processing Payment…</div>
+      <div style="font-size:13px;color:var(--text-light);">Just a moment</div>
+    </div>
+    <div class="payment-success" id="payment-success-view">
+      <div class="success-circle">✓</div>
+      <div class="success-title">Hunt Unlocked! 🎉</div>
+      <div class="success-sub">Your adventure begins now. Good luck!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ CAMERA ════════ -->
+<div id="camera-container">
+  <video id="camera-video" autoplay playsinline></video>
+  <canvas id="camera-canvas"></canvas>
+  <button class="camera-close-btn" onclick="closeCamera()">✕</button>
+  <div class="camera-item-label" id="camera-item-label">Photograph the landmark</div>
+  <div class="camera-ui-overlay">
+    <button class="camera-capture-btn" onclick="capturePhoto()">📷</button>
+    <div style="color:rgba(255,255,255,.6);font-size:12px;">Tap to capture</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════
+
+const FREE_HUNTS = [
+  {
+    id:'explorer', title:'Island Explorer', emoji:'🗺️',
+    desc:'The classic Block Island tour — lighthouses, bluffs, harbor charm. Perfect for first-timers.',
+    difficulty:'Easy', diffColor:'#3a7d44', gradClass:'grad-ocean', totalPoints:650, isPremium:false,
+    items:[
+      {id:'e1',emoji:'🔭',title:'Southeast Lighthouse',location:'Spring St, Mohegan Bluffs area',desc:'This iconic red-brick Victorian lighthouse has guided ships since 1873 and is a National Historic Landmark. Photograph the full tower from the front.',hint:'Walk south down Spring St past Mohegan Bluffs — the lighthouse sits dramatically at the cliff edge.',points:75,type:'landmark'},
+      {id:'e2',emoji:'🌊',title:'Mohegan Bluffs',location:'Southeast coast, Mohegan Trail',desc:'Stunning 150-foot clay cliffs carved by glaciers. Capture the dramatic red-orange bluffs with the ocean below.',hint:'Park at the Southeast Lighthouse and walk to the Payne Overlook viewing area for the best angle.',points:75,type:'nature'},
+      {id:'e3',emoji:'⚓',title:'Old Harbor Ferry Terminal',location:'Water St, Old Harbor',desc:'The heart of Block Island! Photograph the Victorian ferry terminal and the harbor dock.',hint:'Head straight into town from the dock — the terminal has distinctive Victorian architecture.',points:50,type:'landmark'},
+      {id:'e4',emoji:'🏖️',title:'Crescent Beach',location:'Corn Neck Rd, North of Old Harbor',desc:'Block Island\'s most beloved beach stretching nearly 3 miles. Get a wide shot showing the curve of the beach and ocean.',hint:'Head north on Corn Neck Rd. The Frederick J. Benson Pavilion marks the main beach access point.',points:60,type:'beach'},
+      {id:'e5',emoji:'🪨',title:"Settler's Rock",location:'North end, near North Light',desc:'A historic plaque dedicated to the 16 original European settler families of 1661. Photograph the plaque with the ocean behind.',hint:"Follow Corn Neck Rd all the way north — look for the granite monument before the path to North Light.",points:65,type:'historic'},
+      {id:'e6',emoji:'💡',title:'North Light',location:'Sandy Point, northern tip',desc:'A granite lighthouse sitting among the dunes at the island\'s northern tip. Photograph the lighthouse with the dunes and coastline.',hint:"From Settler's Rock, walk along the sandy dune path — about 15 minutes. Wear good shoes!",points:80,type:'landmark'},
+      {id:'e7',emoji:'🌀',title:'The Sacred Labyrinth',location:'Corn Neck Rd',desc:'A beautiful stone labyrinth open to the public for quiet walking meditation. Photograph the circular stone pattern.',hint:'Look for the labyrinth sign on Corn Neck Rd heading north — set back slightly from the road.',points:55,type:'hidden'},
+      {id:'e8',emoji:'🛶',title:'Great Salt Pond',location:'West side, New Harbor',desc:'The heart of Block Island\'s boating scene. Photograph the marina with moored boats, or a paddleboarder on the pond.',hint:'Follow West Side Rd or Ocean Ave to New Harbor. The marina area near Captain Nick\'s is great.',points:60,type:'nature'},
+      {id:'e9',emoji:'🌾',title:'Old Stone Walls',location:'Throughout the island',desc:'Block Island has hundreds of miles of historic stone walls lining the rolling hills. Find one with wildflowers, ocean views, or interesting character.',hint:'Beautiful stone walls line most interior roads — try Lakeside Dr or Coonymus Rd.',points:40,type:'nature'},
+      {id:'e10',emoji:'🎡',title:"Ball O'Brien Park",location:'Old Harbor area',desc:"The lively center of Old Harbor activity. Photograph the park with the Victorian commercial buildings, bikes parked, or the summer crowd.",hint:"Right in the center of Old Harbor near the main commercial strip on Water Street.",points:40,type:'landmark'},
+    ]
+  },
+  {
+    id:'nature', title:'Nature & Wildlife', emoji:'🦅',
+    desc:'Block Island is one of 12 "Last Great Places" on Earth. Discover its wildlife, preserves, and wild coastline.',
+    difficulty:'Moderate', diffColor:'#2fa8c8', gradClass:'grad-teal', totalPoints:580, isPremium:false,
+    items:[
+      {id:'n1',emoji:'🦀',title:'Horseshoe Crab',location:'Crescent Beach or Fred Benson Beach',desc:'Block Island is one of the top Eastern horseshoe crab breeding grounds — unchanged for 300 million years! Photograph one on the beach.',hint:'Best spotted at low tide in spring/early summer. Check the shallow surf zone along Crescent Beach heading north.',points:85,type:'wildlife'},
+      {id:'n2',emoji:'🐦',title:'Migratory Songbird',location:'Clay Head Trail or National Wildlife Refuge',desc:'Block Island is a critical stop on the Atlantic Flyway for 150+ bird species. Photograph any migratory bird.',hint:'Clay Head Nature Trail early morning is best. Bring patience!',points:80,type:'wildlife'},
+      {id:'n3',emoji:'💨',title:'Block Island Wind Farm',location:'Visible from south/west beaches',desc:'The first commercial offshore wind farm in the US! Photograph the 5 turbines visible offshore.',hint:'Head to Mohegan Bluffs beach or west-facing beaches. On clear days the turbines are clearly visible.',points:70,type:'nature'},
+      {id:'n4',emoji:'🌿',title:"Rodman's Hollow",location:'Coonymus Rd, west side',desc:'A glacially carved natural bowl with rare plants. Photograph the dramatic hollow landscape or rare flora.',hint:'Take Coonymus Rd south. Look for Nature Conservancy signs and the hiking kiosk.',points:70,type:'nature'},
+      {id:'n5',emoji:'🦆',title:'Sachem Pond Wildlife',location:'Southeast Light area',desc:'A salt pond and wildlife refuge behind the Southeast Lighthouse. Photograph birds, waterfowl, or the reflective pond.',hint:'Walk behind the Southeast Lighthouse — the pond is just beyond. Dawn and dusk are best.',points:65,type:'wildlife'},
+      {id:'n6',emoji:'🌊',title:'Sea Glass Hunt',location:'West Beach toward North Light',desc:'Block Island beaches are known for sea glass. Photograph a piece you find — even better if it\'s blue or red!',hint:'Walk the shoreline north of Old Harbor toward North Light, searching the surf zone and rocky areas.',points:75,type:'activity'},
+      {id:'n7',emoji:'🪨',title:'Stone Cairns at Bluffs',location:'Mohegan Bluffs Beach',desc:'Visitors have stacked hundreds of stone cairns at the base of Mohegan Bluffs. Photograph the cairn field against the cliff backdrop.',hint:'Descend the 141 steps at Mohegan Bluffs. Cairns are scattered across the pebble beach.',points:65,type:'nature'},
+      {id:'n8',emoji:'🌸',title:'Wildflower Meadow',location:'Clay Head or Nathan Mott Park',desc:"The island's rolling hills burst with wildflowers in summer. Find and photograph Queen Anne's Lace, Black-Eyed Susans, or beach roses.",hint:'Clay Head Trail and Nathan Mott Park have beautiful wildflower meadows.',points:60,type:'nature'},
+    ]
+  },
+  {
+    id:'history', title:'History Buff', emoji:'🏛️',
+    desc:'Dive into 400 years of island history — Native heritage, Victorian architecture, maritime legends, and more.',
+    difficulty:'Moderate', diffColor:'#d4a94a', gradClass:'grad-gold', totalPoints:570, isPremium:false,
+    items:[
+      {id:'h1',emoji:'🏛️',title:'Block Island Historical Society',location:'Old Town Rd',desc:'The island\'s museum and gallery preserving centuries of Block Island history. Photograph the exterior or the museum sign.',hint:'Located on Old Town Rd not far from Old Harbor center. Watch for the historic society sign.',points:65,type:'historic'},
+      {id:'h2',emoji:'⛪',title:"St. Ann's Episcopal Church",location:'Spring St',desc:"One of Block Island's most beloved historic churches. Photograph the church exterior and steeple.",hint:'Walk down Spring St south from Old Harbor — the church is set back with a lovely churchyard.',points:60,type:'historic'},
+      {id:'h3',emoji:'🔭',title:'Southeast Light Museum',location:'Spring St, Mohegan Bluffs area',desc:'The museum tells the story of the dramatic 1993 move of the lighthouse back from the eroding bluffs. Photograph the entrance.',hint:'Inside the keeper\'s house attached to the lighthouse. Open daily late June–Labor Day, 10am–4pm.',points:70,type:'historic'},
+      {id:'h4',emoji:'🏚️',title:'Painted Rock',location:"Tom's Point area, northwest",desc:"A large rock painted by generations of islanders and visitors — one of BI's quirkiest traditions. Photograph the current artwork.",hint:"Head northwest on West Side Rd toward Tom's Point. Ask a local for the exact spot!",points:70,type:'historic'},
+      {id:'h5',emoji:'🦅',title:'Block Island Breakwater',location:'Old Harbor',desc:'The long stone breakwater protecting Old Harbor. Photograph it with the harbor and Victorian buildings behind.',hint:'Access from the south end of the Old Harbor dock area. Walk to the end for the best views.',points:55,type:'historic'},
+      {id:'h6',emoji:'🏨',title:'Spring House Hotel',location:'Spring St',desc:"One of Block Island's most historic Victorian inns dating back to 1852. Photograph the iconic white building with its expansive lawn.",hint:'The Spring House sits on high ground along Spring St — the sweeping lawn and white facade are unmistakable.',points:60,type:'historic'},
+      {id:'h7',emoji:'⛵',title:'Old Harbor Dock at Sunset',location:'Water St, Old Harbor',desc:'The old harbor at golden hour — Victorian buildings glowing, boats bobbing. Capture the harbor as the light turns golden.',hint:'Position yourself at the end of the dock or near the breakwater for the best harbor angle.',points:75,type:'scenic'},
+      {id:'h8',emoji:'📜',title:'Block Island Cemetery',location:'Center of island, Center Rd area',desc:'One of the island\'s historic cemeteries with graves dating back to the 1700s. Photograph the oldest tombstones you can find.',hint:'Several historic cemeteries dot the island along Center Rd and Old Town Rd. Look for slate headstones.',points:65,type:'historic'},
+    ]
+  },
+  {
+    id:'foodie', title:'Foodie Adventure', emoji:'🦞',
+    desc:'Support local businesses! Photograph iconic island eats and collect receipts from participating spots.',
+    difficulty:'Easy', diffColor:'#e8614a', gradClass:'grad-coral', totalPoints:490, isPremium:false,
+    items:[
+      {id:'f1',emoji:'🦞',title:'Lobster Roll on the Island',location:'Any participating restaurant',desc:'You\'re on a New England island — a lobster roll is mandatory! Photograph your lobster roll before eating. Show off that buttery filling!',hint:"Try Finn's Seafood, Ballard's Beach Resort, or The Oar for classic BI lobster rolls.",points:70,type:'food'},
+      {id:'f2',emoji:'🧁',title:"Aldo's Bakery Visit",location:"Weldon's Way, Old Harbor",desc:"Aldo's is the island's legendary Italian bakery and café. Photograph your purchase or receipt!",hint:"Look for Aldo's on Weldon's Way near Old Harbor — follow your nose!",points:75,type:'food',isReceipt:true},
+      {id:'f3',emoji:'🍹',title:'Cocktail with Ocean View',location:"Ballard's Beach or The Oar",desc:"Enjoy a drink at one of Block Island's most iconic beach bars. Photograph with ocean, harbor, or salt pond behind.",hint:"Ballard's is on its own beach with live music. The Oar overlooks the Great Salt Pond.",points:65,type:'food'},
+      {id:'f4',emoji:'🦪',title:'Fresh Seafood Plate',location:'Any island seafood restaurant',desc:'Block Island seafood comes straight off the boat. Photograph your clams, oysters, fish, or scallop plate.',hint:"Finn's Seafood, The Beachead, Ernie's, and Dead Eye Dick's are all great picks.",points:60,type:'food'},
+      {id:'f5',emoji:'🛍️',title:'Block Island Trading Company',location:'1 Water St, Old Harbor',desc:'The iconic souvenir hub of Old Harbor. Photograph your purchase or receipt from the Trading Company.',hint:"It's right at 1 Water St, front and center as you walk off the ferry.",points:60,type:'shopping',isReceipt:true},
+      {id:'f6',emoji:'🍦',title:'Ice Cream on the Island',location:'Old Harbor area',desc:'What\'s a beach trip without ice cream? Photograph your cone or cup — extra points if the ocean is in the background!',hint:"Aldo's has a beloved ice cream counter. Captain Nick's near New Harbor is also a local favorite.",points:55,type:'food'},
+      {id:'f7',emoji:'☕',title:'Local Coffee Receipt',location:'Old Harbor area',desc:'Grab morning coffee at a local café and photograph your cup or receipt. Support a local BI business!',hint:'Various Old Harbor cafés open early for the morning ferry crowd.',points:50,type:'food',isReceipt:true},
+      {id:'f8',emoji:'🏖️',title:"Ballard's Beach Bar",location:"Ballard's Beach, Old Harbor",desc:"Ballard's is THE Block Island institution — beach bar, resort, live music. Show a receipt or selfie there!",hint:"Right on the beach just south of the ferry terminal. Live music every day June–September!",points:55,type:'food',isReceipt:true},
+    ]
+  },
+  {
+    id:'thrill', title:'Thrill Seeker', emoji:'🏄',
+    desc:'For the adventurous explorer! Kayaks, cliff descents, exotic animals, ghost tours, and hidden gems.',
+    difficulty:'Hard', diffColor:'#7b3fa0', gradClass:'grad-forest', totalPoints:610, isPremium:false,
+    items:[
+      {id:'t1',emoji:'🦒',title:'1661 Farm Exotic Animal',location:'1 Spring St, near ferry',desc:"Block Island's legendary exotic animal farm has camels, kangaroos, a zeedonk, and lemurs. Photograph any exotic animal!",hint:"Just steps from the ferry on Spring St — it's FREE to visit! Open daily in summer.",points:80,type:'adventure'},
+      {id:'t2',emoji:'🧗',title:'Mohegan Bluffs Descent',location:'Mohegan Trail, southeast coast',desc:'Brave the 141 wooden steps down the 150-foot clay cliffs. Photograph yourself mid-descent with the cliffs towering above!',hint:'No lifeguards, rough surf — water shoes recommended. The burn going back up is real!',points:90,type:'adventure'},
+      {id:'t3',emoji:'🚣',title:'Kayak or Paddleboard Photo',location:'Great Salt Pond / New Harbor',desc:'Get on the water! Photograph yourself or a companion on a kayak or paddleboard on the Great Salt Pond.',hint:'Rent kayaks at the Great Salt Pond in New Harbor. Calm water, perfect for beginners.',points:85,type:'adventure'},
+      {id:'t4',emoji:'👻',title:'Block Island Ghost Tour',location:'Old Harbor area',desc:'Block Island has ghost ships, FBI manhunts, Native American lore, and curses. Photograph the Ghost Tour meeting point or guide (with permission!).',hint:'Block Island Ghost Tours operates from Old Harbor in the evenings. Book ahead in peak season!',points:80,type:'adventure'},
+      {id:'t5',emoji:'🐎',title:'Horseback on the Beach',location:'West side of island',desc:'Ride horseback along the western beaches. Photograph yourself or a companion on horseback with the ocean behind.',hint:"Rustic Rides Farm offers guided trail rides. Pick-up from the Block Island Visitor Center. Call ahead!",points:90,type:'adventure'},
+      {id:'t6',emoji:'🔍',title:'Glass Float Found!',location:'Hidden throughout the island',desc:'The Glass Float Project hides numbered glass orbs from June to October. If you find one, photograph it in its hiding spot before registering!',hint:'Hidden in public spaces around trails, beaches, and conservation areas. Check the Glass Float Project website for clues!',points:100,type:'special'},
+      {id:'t7',emoji:'🌄',title:'Sunrise or Sunset on Water',location:'Any ocean-facing beach',desc:'The magic of Block Island at golden hour. Photograph sunrise from Crescent Beach or sunset from any west-facing shore.',hint:'For sunrise: Crescent Beach. For sunset: anywhere on the west coast. Spectacular either way!',points:75,type:'scenic'},
+    ]
+  }
+];
+
+// Premium hunts — these rotate in production; hardcoded here as current examples
+const now = new Date();
+const nextSunday = new Date(now);
+nextSunday.setDate(now.getDate() + (7 - now.getDay()));
+const endOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 0);
+const eventEnd = new Date(now);
+eventEnd.setDate(now.getDate() + 2);
+eventEnd.setHours(17, 0, 0, 0);
+
+const PREMIUM_HUNTS = [
+  {
+    id:'weekly-current', title:"The Seafarer's Challenge", emoji:'⚓',
+    desc:"A curated maritime adventure through Block Island's seafaring history and hidden coastal gems. Crafted by the Chamber of Commerce.",
+    type:'weekly', price:9.99, difficulty:'Moderate', diffColor:'#2fa8c8',
+    gradClass:'grad-ocean', gradInline:'linear-gradient(135deg,#0b3d5e 0%,#1a6b8a 100%)',
+    expires:nextSunday, expiresLabel:`Expires ${nextSunday.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}`,
+    totalPoints:480, isPremium:true, timed:false,
+    prizes:{
+      bronze:{medal:'🥉',name:'Explorer',req:'Any completion (1+ items)',reward:'BI Welcome Pack — sticker set, map & button badge',color:'tier-bronze'},
+      silver:{medal:'🥈',name:'Adventurer',req:'Complete 50%+ of items',reward:'10% discount card at 5 participating Old Harbor shops',color:'tier-silver'},
+      gold:{medal:'🥇',name:'Islander',req:'Complete 75%+ of items',reward:'$25 gift card to a participating island restaurant',color:'tier-gold'},
+      platinum:{medal:'💎',name:'Champion',req:'Complete 100% of items',reward:'$50 BI Experience Pack — dining + activity voucher + swag bag',color:'tier-platinum'},
+    },
+    items:[
+      {id:'w1',emoji:'🚢',title:'Ferry Leaving Old Harbor',location:'Old Harbor dock',desc:'Photograph a ferry departing the dock with the Victorian town buildings in the background. Capture the wake and the crowd waving.',hint:'The ferry runs multiple times daily. Best shot from the south end of the dock or from the breakwater.',points:60,type:'maritime'},
+      {id:'w2',emoji:'🍺',title:"The Oar's Famous Oar Collection",location:'The Oar Restaurant, New Harbor',desc:'The Oar restaurant is famous for its ceiling covered in oars left by visiting boaters. Photograph the oar collection inside!',hint:'The Oar is on the Great Salt Pond at New Harbor. The oar collection is unmissable — thousands of them!',points:65,type:'landmark'},
+      {id:'w3',emoji:'🎣',title:'Fishing Vessel at New Harbor',location:'Great Salt Pond Marina',desc:'Block Island has a storied fishing heritage. Photograph a fishing boat or lobster vessel at New Harbor marina.',hint:'Walk the dock at New Harbor marina early morning for the best fishing boat activity.',points:70,type:'maritime'},
+      {id:'w4',emoji:'🦞',title:'Lobster Trap on Land',location:'Any dock or shoreline area',desc:'The quintessential New England image — a stack of lobster traps on the dock or shore. Photograph them with the harbor behind.',hint:'Check the New Harbor marina dock area or the Old Harbor fishing pier for lobster traps.',points:60,type:'maritime'},
+      {id:'w5',emoji:'⛵',title:'Breakwater from Water Side',location:'Old Harbor breakwater',desc:'Walk to the end of the iconic Old Harbor breakwater and photograph back toward the town — boats, Victorians, the whole picture.',hint:'Access the breakwater from the south end of Old Harbor dock. Walk to the end for the best vista.',points:70,type:'landmark'},
+      {id:'w6',emoji:'🌅',title:'Great Salt Pond Sunset',location:'New Harbor / Great Salt Pond',desc:'The Great Salt Pond at golden hour with silhouetted sailboats is pure Block Island magic. Time it right and photograph the scene.',hint:'Best at sunset, facing west from the marina. The moorings and anchored sailboats make a stunning silhouette.',points:80,type:'scenic'},
+      {id:'w7',emoji:'🗿',title:'Adrian Block Tribute',location:'Old Harbor area',desc:"Block Island was named after explorer Adrian Block who landed in 1614. Find and photograph any tribute or marker to him on the island.",hint:'Check the Historical Society museum and Old Harbor landmarks. Ask a local if you\'re stuck!',points:75,type:'historic'},
+    ]
+  },
+  {
+    id:'monthly-current', title:'Grand Island Circuit', emoji:'🏝️',
+    desc:'The ultimate Block Island experience — 11 stops covering every corner of this extraordinary 7-square-mile island. A true bucket list adventure.',
+    type:'monthly', price:9.99, difficulty:'Hard', diffColor:'#22c5b0',
+    gradClass:'grad-teal', gradInline:'linear-gradient(135deg,#0e7060 0%,#22c5b0 100%)',
+    expires:endOfMonth, expiresLabel:`Expires ${endOfMonth.toLocaleDateString('en-US',{month:'long',day:'numeric'})}`,
+    totalPoints:820, isPremium:true, timed:false,
+    prizes:{
+      bronze:{medal:'🥉',name:'Explorer',req:'Any completion (1+ items)',reward:'BI Welcome Pack — sticker set, map & button badge',color:'tier-bronze'},
+      silver:{medal:'🥈',name:'Adventurer',req:'Complete 50%+ of items',reward:'15% discount card at 6 participating shops & restaurants',color:'tier-silver'},
+      gold:{medal:'🥇',name:'Islander',req:'Complete 75%+ of items',reward:'$40 island dining credit at any participating restaurant',color:'tier-gold'},
+      platinum:{medal:'💎',name:'Grand Circuit Champion',req:'Complete all 11 stops',reward:'$100 Block Island Experience Pack — 2 restaurant meals + activity voucher + swag',color:'tier-platinum'},
+    },
+    items:[
+      {id:'m1',emoji:'💡',title:'North Light',location:'Sandy Point, north tip',desc:'The northernmost point of the island — a granite lighthouse standing among wild dunes. Photograph the lighthouse with the beach and dunes.',hint:'Follow Corn Neck Rd to the very end, then walk the dune path ~15 min.',points:80,type:'landmark'},
+      {id:'m2',emoji:'🪨',title:"Settler's Rock",location:'North end, near North Light',desc:'The historic marker for the 16 founding families of 1661. Photograph the plaque with the northern coastline.',hint:"Just before the North Light path on Corn Neck Rd.",points:65,type:'historic'},
+      {id:'m3',emoji:'🌿',title:'Clay Head Overlook',location:'East coast, Clay Head Trail',desc:'A stunning natural bluff overlooking the open Atlantic on the island\'s east coast. Photograph the ocean view from the overlook.',hint:'Take Clay Head Rd east and follow the trail signs. Early morning offers mist and stunning light.',points:80,type:'nature'},
+      {id:'m4',emoji:'🏖️',title:'Mansion Beach',location:'Northeast coast',desc:'One of the most secluded and beautiful beaches on the island. Photograph the beach with the dunes and open Atlantic.',hint:'A short hike from the end of Mansion Rd — a peaceful, less-crowded gem.',points:70,type:'beach'},
+      {id:'m5',emoji:'🦒',title:'1661 Farm Animal',location:'1 Spring St',desc:'The legendary exotic petting zoo near the ferry. Photograph any of the exotic animals: camel, kangaroo, zeedonk, or lemur!',hint:"Free to visit, steps from the ferry terminal. Open daily in summer.",points:65,type:'wildlife'},
+      {id:'m6',emoji:'🏛️',title:'Historical Society',location:'Old Town Rd',desc:'The heart of Block Island history. Photograph the building exterior or the museum entrance.',hint:'On Old Town Rd near the center of Old Harbor.',points:60,type:'historic'},
+      {id:'m7',emoji:'🌀',title:'Sacred Labyrinth',location:'Corn Neck Rd',desc:'The beautiful stone labyrinth for walking meditation. Photograph someone walking the path or the full pattern from above.',hint:'Look for the sign on Corn Neck Rd heading north.',points:60,type:'hidden'},
+      {id:'m8',emoji:'🌿',title:"Rodman's Hollow",location:'Coonymus Rd, west side',desc:'The dramatic glacially-carved hollow with rare plants. Photograph the sweeping bowl-shaped landscape.',hint:'Take Coonymus Rd south — look for Nature Conservancy signs.',points:75,type:'nature'},
+      {id:'m9',emoji:'🧗',title:'Mohegan Bluffs Beach',location:'Southeast coast',desc:'Descend the 141 steps to the stunning beach at the base of the red-clay bluffs. Photograph looking back up at the cliffs.',hint:'Require a steep descent and ascent — take water! No lifeguards.',points:90,type:'adventure'},
+      {id:'m10',emoji:'🔭',title:'Southeast Lighthouse',location:'Spring St',desc:'The iconic red-brick Victorian lighthouse atop Mohegan Bluffs. Photograph it from the cliff edge at golden hour if possible.',hint:'Visit late afternoon for the best light — the brick turns deep red.',points:80,type:'landmark'},
+      {id:'m11',emoji:'🌅',title:'Great Salt Pond Sunset',location:'New Harbor',desc:'End your circuit at the Great Salt Pond watching the sun set over the Atlantic. Photograph the silhouetted sailboats.',hint:'New Harbor marina at sunset. The perfect way to end the Grand Circuit.',points:95,type:'scenic'},
+    ]
+  },
+  {
+    id:'event-spring-sprint', title:'⚡ Spring Sprint: Island Champion', emoji:'⚡',
+    desc:'RACE AGAINST THE CLOCK! First person to complete all 8 stops around the island and verify at the Chamber wins the Grand Prize. Timed from your first photo. Biking or moping strongly recommended.',
+    type:'event', price:24.99, difficulty:'Expert', diffColor:'#c0392b',
+    gradClass:'grad-event', gradInline:'linear-gradient(135deg,#7a1a1a 0%,#c0392b 100%)',
+    expires:eventEnd, expiresLabel:`Event ends ${eventEnd.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} at 5pm`,
+    totalPoints:600, isPremium:true, timed:true,
+    grandPrize:'$500 Block Island Experience Prize Pack',
+    grandPrizeSub:'Verified by the Chamber of Commerce · One winner per event',
+    prizes:{
+      first:{medal:'🥇',name:'Island Champion',req:'1st to complete & verify at Chamber',reward:'$500 Block Island Experience Pack — hotel night, dining, activities & swag',color:'tier-gold'},
+      top5:{medal:'🥈',name:'Elite Explorer',req:'Top 5 completion times',reward:'$75 island dining & activity credit',color:'tier-silver'},
+      top20:{medal:'🥉',name:'Speed Runner',req:'Top 20 completion times',reward:'$25 Block Island gift pack at the Chamber',color:'tier-bronze'},
+      finisher:{medal:'🏅',name:'Sprint Finisher',req:'Complete all 8 stops (any time)',reward:'BI Champion swag bag — t-shirt, pin & map',color:'tier-bronze'},
+    },
+    mockLeaderboard:[
+      {rank:1, name:'Jake M.', time:'1h 24m', you:false},
+      {rank:2, name:'Sarah K.', time:'1h 31m', you:false},
+      {rank:3, name:'Ryan P.', time:'1h 48m', you:false},
+      {rank:4, name:'Emma T.', time:'2h 02m', you:false},
+      {rank:5, name:'Chris D.', time:'2h 15m', you:false},
+    ],
+    items:[
+      {id:'sp1',emoji:'💡',title:'North Light',location:'Sandy Point — FAR NORTH',desc:'The northernmost tip of the island — photograph the lighthouse from the beach. Starting point for most.',hint:'Corn Neck Rd all the way north, then walk the dune path. Plan 20 min from Old Harbor by bike.',points:75,type:'landmark'},
+      {id:'sp2',emoji:'🪨',title:"Settler's Rock",location:'Near North Light',desc:'The historic 1661 founding plaque — photograph it on your way south from North Light.',hint:'Just off Corn Neck Rd before the North Light path. Quick stop!',points:60,type:'historic'},
+      {id:'sp3',emoji:'🌿',title:'Clay Head Overlook',location:'East coast',desc:'The east coast Atlantic overlook — photograph the ocean view.',hint:'Take a right on Corn Neck Rd south, then head east on Clay Head Rd.',points:75,type:'nature'},
+      {id:'sp4',emoji:'🦒',title:'1661 Farm — Any Animal',location:'Spring St, Old Harbor',desc:'Quick stop at the exotic animal farm near the ferry. Photograph any animal!',hint:'Spring St just north of the ferry terminal — FREE, just snap and go!',points:65,type:'wildlife'},
+      {id:'sp5',emoji:'⚓',title:'Old Harbor Dock',location:'Water St, Old Harbor',desc:'The central hub — photograph the ferry terminal building and dock.',hint:'Center of Old Harbor — use this as your fuel/water stop!',points:55,type:'landmark'},
+      {id:'sp6',emoji:'🧗',title:'Mohegan Bluffs Beach',location:'Southeast — FAR SOUTH',desc:'Must descend the 141 steps to the beach and photograph looking back up. This is the hardest stop!',hint:'Take Spring St south past the lighthouse. The stair descent adds ~10 min but is required!',points:100,type:'adventure'},
+      {id:'sp7',emoji:'🔭',title:'Southeast Lighthouse',location:'Spring St',desc:'Right next to Mohegan Bluffs — photograph the lighthouse tower close-up.',hint:'On your way back from the bluffs — just a few steps from the stair top.',points:70,type:'landmark'},
+      {id:'sp8',emoji:'🌅',title:'Great Salt Pond Finish',location:'New Harbor — WEST SIDE',desc:'Your final stop — photograph the marina at the Great Salt Pond to complete your circuit!',hint:'Take West Side Rd or Center Rd to New Harbor. The last and most rewarding stop!',points:100,type:'finish'},
+    ]
+  }
+];
+
+// All hunts combined for easy lookup
+const ALL_HUNTS = [...FREE_HUNTS, ...PREMIUM_HUNTS];
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let state = {
+  user:{name:'Explorer', email:'', party:'2', duration:'weekend'},
+  progress:{},          // huntId -> {completedItems:[], photosTaken:[]}
+  unlockedHunts:[],      // purchased premium hunt IDs
+  capturedPhotos:{},     // itemId -> dataURL
+  currentHuntId:null,
+  currentItemId:null,
+  huntStartTimes:{},     // huntId -> timestamp ms
+  completionCodes:{},    // huntId -> code string
+  cameraStream:null,
+  timerInterval:null,
+};
+
+try {
+  const saved = sessionStorage.getItem('bi_hunt_v2');
+  if(saved){ const p=JSON.parse(saved); Object.assign(state,p); state.cameraStream=null; state.timerInterval=null; }
+} catch(e){}
+
+ALL_HUNTS.forEach(h=>{ if(!state.progress[h.id]) state.progress[h.id]={completedItems:[],photosTaken:[]}; });
+
+function saveState(){
+  try{
+    const s={...state}; delete s.cameraStream; delete s.timerInterval;
+    sessionStorage.setItem('bi_hunt_v2',JSON.stringify(s));
+  }catch(e){}
+}
+
+// ════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════
+const NAV_SCREENS = ['hunts','leaderboard','progress','profile'];
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  if(NAV_SCREENS.includes(id)){
+    document.body.classList.add('nav-visible');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const navEl=document.getElementById('nav-'+id);
+    if(navEl){ navEl.classList.add('active'); positionNavPill(navEl); }
+  } else {
+    document.body.classList.remove('nav-visible');
+  }
+  if(id==='hunts') renderAllHuntCards();
+  if(id==='progress') renderProgressScreen();
+  if(id==='profile') renderProfileScreen();
+}
+
+function positionNavPill(activeEl){
+  const pill=document.getElementById('nav-pill');
+  if(!pill||!activeEl) return;
+  const bar=activeEl.closest('.nav-bar');
+  if(!bar) return;
+  const barRect=bar.getBoundingClientRect();
+  const elRect=activeEl.getBoundingClientRect();
+  pill.style.left=(elRect.left-barRect.left+6)+'px';
+  pill.style.width=(elRect.width-12)+'px';
+}
+
+function navTo(id){
+  if(id==='leaderboard'){ showLeaderboard(); return; }
+  showScreen(id);
+}
+
+// ════════════════════════════════════════════════
+//  PROGRESS SCREEN
+// ════════════════════════════════════════════════
+function renderProgressScreen(){
+  // Header stats
+  let totalItems=0, totalPts=0, completedHunts=0;
+  ALL_HUNTS.forEach(h=>{
+    const prog=state.progress[h.id]||{completedItems:[]};
+    totalItems+=prog.completedItems.length;
+    totalPts+=getHuntPoints(h.id);
+    if(prog.completedItems.length===h.items.length) completedHunts++;
+  });
+  document.getElementById('prog-total-pts').textContent=totalPts.toLocaleString();
+  document.getElementById('prog-items-found').textContent=totalItems;
+  document.getElementById('prog-hunts-done').textContent=completedHunts;
+
+  const body=document.getElementById('progress-body');
+  body.innerHTML='';
+
+  // Section: Premium (if any unlocked)
+  const unlockedPremium=PREMIUM_HUNTS.filter(h=>state.unlockedHunts.includes(h.id));
+  if(unlockedPremium.length>0){
+    const lbl=document.createElement('div');
+    lbl.className='section-label'; lbl.style='margin-bottom:12px;color:var(--gold-dark);';
+    lbl.textContent='⭐ My Premium Hunts'; body.appendChild(lbl);
+    unlockedPremium.forEach(h=>body.appendChild(buildProgressCard(h,'premium')));
+  }
+
+  // Section: Free hunts
+  const inProgressFree=FREE_HUNTS.filter(h=>{ const p=state.progress[h.id]||{completedItems:[]}; return p.completedItems.length>0; });
+  const notStartedFree=FREE_HUNTS.filter(h=>{ const p=state.progress[h.id]||{completedItems:[]}; return p.completedItems.length===0; });
+
+  if(inProgressFree.length>0){
+    const lbl=document.createElement('div');
+    lbl.className='section-label'; lbl.style='margin-bottom:12px;margin-top:8px;';
+    lbl.textContent='🎯 In Progress'; body.appendChild(lbl);
+    inProgressFree.forEach(h=>body.appendChild(buildProgressCard(h,'free')));
+  }
+
+  if(notStartedFree.length>0){
+    const lbl=document.createElement('div');
+    lbl.className='section-label'; lbl.style='margin-bottom:12px;margin-top:8px;color:var(--text-light);';
+    lbl.textContent='🆕 Not Started'; body.appendChild(lbl);
+    notStartedFree.forEach(h=>body.appendChild(buildProgressCard(h,'free')));
+  }
+
+  // Locked premium hunts teaser
+  const lockedPremium=PREMIUM_HUNTS.filter(h=>!state.unlockedHunts.includes(h.id));
+  if(lockedPremium.length>0){
+    const lbl=document.createElement('div');
+    lbl.className='section-label'; lbl.style='margin-bottom:12px;margin-top:8px;';
+    lbl.textContent='🔒 Premium — Not Unlocked'; body.appendChild(lbl);
+    lockedPremium.forEach(h=>{
+      const card=document.createElement('div');
+      card.className='progress-hunt-card'; card.style='opacity:.65;';
+      card.innerHTML=`
+        <div class="progress-hunt-icon" style="background:${h.gradInline||gradToInline(h.gradClass)};">${h.emoji}</div>
+        <div class="progress-hunt-info" style="flex:1;">
+          <div class="progress-hunt-name">${h.title}</div>
+          <div class="progress-hunt-meta">🔒 $${h.price.toFixed(2)} · ${h.items.length} stops · Win up to ${h.type==='event'?h.grandPrize:'$50 in rewards'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;font-weight:700;color:var(--gold-dark);background:var(--sand);border-radius:8px;padding:4px 10px;">UNLOCK</div>
+        </div>`;
+      card.onclick=()=>openHuntPreview(h.id);
+      body.appendChild(card);
+    });
+  }
+}
+
+function buildProgressCard(hunt, type){
+  const prog=state.progress[hunt.id]||{completedItems:[]};
+  const done=prog.completedItems.length, total=hunt.items.length;
+  const pts=getHuntPoints(hunt.id);
+  const pct=Math.round((done/total)*100);
+  const isComplete=done===total;
+  const fillColor=isComplete?'var(--green-isle)':type==='premium'?'var(--gold)':'var(--teal)';
+
+  const card=document.createElement('div');
+  card.className='progress-hunt-card';
+  if(isComplete) card.style.border='2px solid var(--green-isle)';
+
+  card.innerHTML=`
+    <div class="progress-hunt-icon" style="background:${hunt.gradInline||gradToInline(hunt.gradClass)};">${hunt.emoji}</div>
+    <div class="progress-hunt-info">
+      <div class="progress-hunt-name">${hunt.title} ${isComplete?'✅':''}</div>
+      <div class="progress-hunt-meta">${done}/${total} items · ${pct}% complete${type==='premium'?' · ⭐ Premium':''}</div>
+      <div class="progress-mini-bar">
+        <div class="progress-mini-fill" style="width:${pct}%;background:${fillColor};"></div>
+      </div>
+    </div>
+    <div>
+      <div class="progress-hunt-pts">${pts>0?pts.toLocaleString():'–'}</div>
+      <div class="progress-hunt-pts-lbl">${pts>0?'pts':''}</div>
+    </div>`;
+
+  card.onclick=()=>{
+    if(type==='premium'&&isComplete) showCertificate(hunt.id);
+    else openHunt(hunt.id);
+  };
+  return card;
+}
+
+// ════════════════════════════════════════════════
+//  PROFILE SCREEN
+// ════════════════════════════════════════════════
+const ACHIEVEMENTS=[
+  {id:'first_photo',  icon:'📷', name:'First Snap',    desc:'Take your first photo',    check:()=>Object.keys(state.capturedPhotos).length>0},
+  {id:'first_item',   icon:'✅', name:'First Find',    desc:'Complete your first item',  check:()=>ALL_HUNTS.some(h=>(state.progress[h.id]||{completedItems:[]}).completedItems.length>0)},
+  {id:'hunt_complete',icon:'🏁', name:'Hunt Champ',    desc:'Complete a full hunt',      check:()=>ALL_HUNTS.some(h=>{const p=state.progress[h.id]||{completedItems:[]};return p.completedItems.length===h.items.length;})},
+  {id:'explorer_100', icon:'🗺️', name:'True Explorer', desc:'100pts in Explorer hunt',   check:()=>getHuntPoints('explorer')>=100},
+  {id:'nature_fan',   icon:'🦅', name:'Nature Fan',    desc:'Complete Nature hunt',      check:()=>{const p=state.progress['nature']||{completedItems:[]};return p.completedItems.length===(FREE_HUNTS.find(h=>h.id==='nature')||{items:[]}).items.length;}},
+  {id:'foodie',       icon:'🦞', name:'Island Foodie', desc:'Complete Foodie hunt',      check:()=>{const p=state.progress['foodie']||{completedItems:[]};return p.completedItems.length===(FREE_HUNTS.find(h=>h.id==='foodie')||{items:[]}).items.length;}},
+  {id:'premium_user', icon:'⭐', name:'Premium',       desc:'Unlock a premium hunt',     check:()=>state.unlockedHunts.length>0},
+  {id:'high_scorer',  icon:'💎', name:'High Scorer',   desc:'Earn 500+ total points',    check:()=>getTotalPoints()>=500},
+  {id:'photographer', icon:'📸', name:'Shutterbug',    desc:'Take 10+ photos',           check:()=>Object.keys(state.capturedPhotos).length>=10},
+  {id:'all_free',     icon:'🏆', name:'Free Legend',   desc:'Complete all free hunts',   check:()=>FREE_HUNTS.every(h=>{const p=state.progress[h.id]||{completedItems:[]};return p.completedItems.length===h.items.length;})},
+  {id:'lighthouse',   icon:'🔭', name:'Lighthouse Fan',desc:'Find both lighthouses',     check:()=>['e1','e6'].every(id=>ALL_HUNTS.some(h=>(state.progress[h.id]||{completedItems:[]}).completedItems.includes(id)))},
+  {id:'thrill',       icon:'🏄', name:'Thrill Seeker', desc:'Complete Thrill hunt',      check:()=>{const p=state.progress['thrill']||{completedItems:[]};return p.completedItems.length===(FREE_HUNTS.find(h=>h.id==='thrill')||{items:[]}).items.length;}},
+];
+
+function getExplorerTitle(pts){
+  if(pts>=750) return 'Block Island Legend 💎';
+  if(pts>=500) return 'Island Champion 🏆';
+  if(pts>=300) return 'Seasoned Explorer 🌟';
+  if(pts>=100) return 'Island Adventurer 🦅';
+  if(pts>=1)   return 'New Explorer 🌊';
+  return 'Curious Visitor 👀';
+}
+
+function renderProfileScreen(){
+  const pts=getTotalPoints();
+  const name=state.user.name||'Explorer';
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const huntsComplete=ALL_HUNTS.filter(h=>{const p=state.progress[h.id]||{completedItems:[]};return p.completedItems.length===h.items.length;}).length;
+
+  // Header
+  document.getElementById('profile-avatar-initials').textContent=initials;
+  document.getElementById('profile-display-name').textContent=name;
+  document.getElementById('profile-display-title').textContent=getExplorerTitle(pts);
+  document.getElementById('profile-stat-pts').textContent=pts.toLocaleString();
+  document.getElementById('profile-stat-hunts').textContent=huntsComplete;
+
+  // Rank
+  const me=getUserEntry();
+  const data=buildLbData('all','all');
+  const myEntry=data.find(p=>p.isYou);
+  document.getElementById('profile-stat-rank').textContent=myEntry?`#${myEntry.rank}`:'#–';
+
+  // Pre-fill form
+  document.getElementById('profile-name-input').value=state.user.name||'';
+  document.getElementById('profile-email-input').value=state.user.email||'';
+  document.getElementById('profile-party-select').value=state.user.party||'3-4';
+  document.getElementById('profile-duration-select').value=state.user.duration||'weekend';
+
+  // Achievements
+  const grid=document.getElementById('profile-achievements');
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const earned=a.check();
+    const div=document.createElement('div');
+    div.className='achievement-item'+(earned?'':' locked');
+    div.title=a.desc;
+    div.innerHTML=`<div class="achievement-icon">${a.icon}</div><div class="achievement-name">${a.name}</div>`;
+    grid.appendChild(div);
+  });
+
+  // Unlocked premium hunts
+  const ul=document.getElementById('profile-unlocked-list');
+  const section=document.getElementById('profile-unlocked-section');
+  if(state.unlockedHunts.length===0){
+    section.style.display='none';
+  } else {
+    section.style.display='block';
+    ul.innerHTML='';
+    state.unlockedHunts.forEach(id=>{
+      const hunt=PREMIUM_HUNTS.find(h=>h.id===id);
+      if(!hunt) return;
+      const prog=state.progress[id]||{completedItems:[]};
+      const done=prog.completedItems.length, total=hunt.items.length;
+      const row=document.createElement('div');
+      row.className='unlocked-hunt-row';
+      row.innerHTML=`
+        <span style="font-size:28px;">${hunt.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:14px;color:var(--text-dark);">${hunt.title}</div>
+          <div style="font-size:12px;color:var(--text-light);">${done}/${total} complete · ${getHuntPoints(id)} pts earned</div>
+        </div>
+        <button onclick="openHunt('${id}')" style="background:var(--ocean);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Continue</button>`;
+      ul.appendChild(row);
+    });
+  }
+}
+
+function saveProfile(){
+  const name=document.getElementById('profile-name-input').value.trim();
+  if(!name){showToast('Please enter your name');return;}
+  state.user.name=name;
+  state.user.email=document.getElementById('profile-email-input').value.trim();
+  state.user.party=document.getElementById('profile-party-select').value;
+  state.user.duration=document.getElementById('profile-duration-select').value;
+  saveState();
+  renderProfileScreen();
+  showToast('Profile saved! ✅');
+}
+
+function confirmReset(){
+  if(confirm('Reset all hunt progress? Your purchased hunts will stay unlocked.')){
+    state.progress={};
+    state.capturedPhotos={};
+    state.completionCodes={};
+    state.huntStartTimes={};
+    ALL_HUNTS.forEach(h=>{state.progress[h.id]={completedItems:[],photosTaken:[]};});
+    saveState();
+    renderProfileScreen();
+    showToast('Progress reset ✓');
+  }
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+function skipRegister(){ showScreen('hunts'); }
+
+function completeRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  if(!name){showToast('Please enter your name 😊');return;}
+  state.user.name=name;
+  state.user.email=document.getElementById('reg-email').value.trim();
+  state.user.party=document.getElementById('reg-party').value;
+  state.user.duration=document.getElementById('reg-duration').value;
+  saveState(); showScreen('hunts');
+}
+
+// ════════════════════════════════════════════════
+//  HUNT LIST
+// ════════════════════════════════════════════════
+function getTotalPoints(){
+  return ALL_HUNTS.reduce((t,h)=>{
+    const prog=state.progress[h.id]||{completedItems:[]};
+    return t+prog.completedItems.reduce((s,id)=>{
+      const item=h.items.find(i=>i.id===id); return s+(item?item.points:0);
+    },0);
+  },0);
+}
+
+function renderAllHuntCards(){
+  const name=state.user.name!=='Explorer'?`Welcome back, ${state.user.name}! 👋`:'Welcome, Explorer! 👋';
+  document.getElementById('hunts-greeting').textContent=name;
+  document.getElementById('total-points-display').textContent=getTotalPoints();
+  const unlocked=state.unlockedHunts.length;
+  document.getElementById('hunts-progress-text').textContent=
+    unlocked>0?`${unlocked} premium hunt${unlocked>1?'s':''} unlocked! Visit the Chamber to claim your rewards.`
+              :'Unlock a premium hunt to earn real island rewards!';
+  renderPremiumCards();
+  renderFreeCards();
+}
+
+function gradToInline(cls){
+  const m={'grad-ocean':'linear-gradient(135deg,#0b3d5e 0%,#1a6b8a 100%)','grad-teal':'linear-gradient(135deg,#0e7060 0%,#22c5b0 100%)','grad-coral':'linear-gradient(135deg,#e8614a 0%,#f5a07b 100%)','grad-gold':'linear-gradient(135deg,#b07d12 0%,#d4a94a 100%)','grad-forest':'linear-gradient(135deg,#1a5c2a 0%,#3a7d44 100%)','grad-event':'linear-gradient(135deg,#7a1a1a 0%,#c0392b 100%)'};
+  return m[cls]||m['grad-ocean'];
+}
+
+function renderPremiumCards(){
+  const c=document.getElementById('premium-hunt-cards-container');
+  c.innerHTML='';
+  PREMIUM_HUNTS.forEach(hunt=>{
+    const unlocked=state.unlockedHunts.includes(hunt.id);
+    const prog=state.progress[hunt.id]||{completedItems:[]};
+    const done=prog.completedItems.length, total=hunt.items.length;
+    const pct=Math.round((done/total)*100);
+    const isEvent=hunt.type==='event';
+    const card=document.createElement('div');
+    card.className='premium-hunt-card'+(isEvent?' event-card':'');
+
+    let badgeClass=hunt.type==='weekly'?'badge-weekly':hunt.type==='monthly'?'badge-monthly':'badge-event';
+    let badgeLabel=hunt.type==='weekly'?'WEEKLY':hunt.type==='monthly'?'MONTHLY':'⚡ LIVE EVENT';
+
+    card.innerHTML=`
+      <div class="premium-banner" style="background:${hunt.gradInline||gradToInline(hunt.gradClass)};">
+        <div class="premium-banner-emoji">${hunt.emoji}</div>
+        ${unlocked?'':`<div class="price-pill"><span class="lock-icon">🔒</span> $${hunt.price.toFixed(2)}</div>`}
+        <div class="expires-pill">${isEvent?`<span class="event-live-dot"></span>`:''}${hunt.expiresLabel}</div>
+        <div class="premium-type-badge ${badgeClass}" style="position:absolute;bottom:14px;left:18px;">${badgeLabel}</div>
+        ${unlocked?`<div style="position:absolute;top:12px;right:16px;background:rgba(58,125,68,.9);color:white;border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;">✅ UNLOCKED</div>`:''}
+      </div>
+      <div class="premium-card-body">
+        <div class="hunt-card-title">${hunt.title}</div>
+        <div class="hunt-card-desc">${hunt.desc.substring(0,90)}${hunt.desc.length>90?'…':''}</div>
+        <div class="hunt-meta">
+          <div class="hunt-meta-item">📍 ${total} stops</div>
+          <div class="hunt-meta-item">⭐ ${hunt.totalPoints} pts</div>
+          ${isEvent?`<div class="hunt-meta-item" style="color:var(--event-red);font-weight:600;">🏆 ${hunt.grandPrize?hunt.grandPrize.split(' ')[0]:''} Prize</div>`:''}
+          ${unlocked&&done>0?`<div class="hunt-meta-item" style="color:var(--teal);font-weight:600;margin-left:auto;">${done}/${total} done</div>`:''}
+        </div>
+        ${unlocked?`<div class="hunt-progress-bar" style="margin-top:10px;"><div class="hunt-progress-fill" style="width:${pct}%;"></div></div>`:''}
+        ${!unlocked?`<div class="prize-teaser"><span style="font-size:22px;">🏆</span><div class="prize-teaser-text">Win up to <strong>${isEvent?hunt.grandPrize:'$50 in local rewards'}</strong> redeemable at the Chamber of Commerce!</div></div>`:''}
+      </div>
+    `;
+    card.onclick=()=>unlocked?openHunt(hunt.id):openHuntPreview(hunt.id);
+    c.appendChild(card);
+  });
+}
+
+function renderFreeCards(){
+  const c=document.getElementById('hunt-cards-container');
+  c.innerHTML='';
+  FREE_HUNTS.forEach(hunt=>{
+    const prog=state.progress[hunt.id]||{completedItems:[]};
+    const done=prog.completedItems.length, total=hunt.items.length;
+    const pct=Math.round((done/total)*100), isComplete=done===total;
+    const card=document.createElement('div');
+    card.className='hunt-card'+(isComplete?' completed':'');
+    card.innerHTML=`
+      <div class="hunt-card-banner" style="background:${gradToInline(hunt.gradClass)};">
+        <div class="hunt-emoji">${hunt.emoji}</div>
+        ${isComplete?`<div style="position:absolute;top:12px;left:18px;background:var(--green-isle);color:white;border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;">✅ Complete</div>`:''}
+        <div class="hunt-difficulty" style="background:${hunt.diffColor}55;color:white;border:1px solid ${hunt.diffColor}88;">${hunt.difficulty}</div>
+      </div>
+      <div class="hunt-card-body">
+        <div class="hunt-card-title">${hunt.title}</div>
+        <div class="hunt-card-desc">${hunt.desc}</div>
+        <div class="hunt-meta">
+          <div class="hunt-meta-item">📍 ${total} stops</div>
+          <div class="hunt-meta-item">⭐ ${hunt.totalPoints} pts</div>
+          <div class="hunt-meta-item" style="color:var(--green-isle);font-weight:600;">FREE</div>
+          ${done>0?`<div class="hunt-meta-item" style="margin-left:auto;font-weight:600;color:var(--teal);">${done}/${total} done</div>`:''}
+        </div>
+        <div class="hunt-progress-bar"><div class="hunt-progress-fill" style="width:${pct}%;"></div></div>
+      </div>
+    `;
+    card.onclick=()=>openHunt(hunt.id);
+    c.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  PREMIUM HUNT PREVIEW
+// ════════════════════════════════════════════════
+function openHuntPreview(huntId){
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===huntId);
+  state.currentHuntId=huntId;
+
+  const header=document.getElementById('preview-header');
+  header.style.background=hunt.gradInline||gradToInline(hunt.gradClass);
+  document.getElementById('preview-emoji').textContent=hunt.emoji;
+  document.getElementById('preview-title').textContent=hunt.title;
+  document.getElementById('preview-desc').textContent=hunt.desc;
+  document.getElementById('preview-price-display').textContent=`$${hunt.price.toFixed(2)}`;
+  document.getElementById('preview-price-label').textContent=hunt.type==='event'?'Entry fee · Timed competition':'Flat fee · Valid for this '+hunt.type+' period';
+
+  // Meta chips
+  const chips=document.getElementById('preview-chips');
+  chips.innerHTML=`
+    <div class="preview-chip">📍 ${hunt.items.length} stops</div>
+    <div class="preview-chip">⭐ ${hunt.totalPoints} pts</div>
+    <div class="preview-chip">${hunt.type==='event'?'⏱ Timed Race':hunt.difficulty}</div>
+    <div class="preview-chip">${hunt.expiresLabel}</div>
+  `;
+
+  // Event-specific UI
+  const gp=document.getElementById('preview-grand-prize');
+  const cb=document.getElementById('preview-countdown-box');
+  if(hunt.type==='event'){
+    gp.style.display='block';
+    document.getElementById('preview-grand-prize-value').textContent=hunt.grandPrize||'Grand Prize';
+    document.getElementById('preview-grand-prize-sub').textContent=hunt.grandPrizeSub||'Verified by Chamber';
+    cb.style.display='block';
+    updatePreviewCountdown(hunt);
+  } else {
+    gp.style.display='none';
+    cb.style.display='none';
+  }
+
+  // Prize tiers
+  const tiersEl=document.getElementById('preview-prize-tiers');
+  tiersEl.innerHTML='';
+  const prizes=hunt.prizes;
+  Object.values(prizes).forEach(tier=>{
+    const d=document.createElement('div');
+    d.className=`prize-tier-card ${tier.color}`;
+    d.innerHTML=`<div class="tier-medal">${tier.medal}</div><div class="tier-info"><div class="tier-name">${tier.name}</div><div class="tier-req">${tier.req}</div><div class="tier-reward">${tier.reward}</div></div>`;
+    tiersEl.appendChild(d);
+  });
+
+  // Event leaderboard preview
+  const lb=document.getElementById('preview-leaderboard');
+  if(hunt.mockLeaderboard&&hunt.type==='event'){
+    lb.style.display='block';
+    const lbItems=document.getElementById('preview-leaderboard-items');
+    lbItems.innerHTML='';
+    hunt.mockLeaderboard.forEach(e=>{
+      const rankClass=e.rank===1?'gold-rank':e.rank===2?'silver-rank':e.rank===3?'bronze-rank':'';
+      const d=document.createElement('div');
+      d.className='leaderboard-item';
+      d.innerHTML=`<div class="lb-rank ${rankClass}">${e.rank<=3?['🥇','🥈','🥉'][e.rank-1]:e.rank}</div><div class="lb-name">${e.name}${e.you?'<span class="lb-you">YOU</span>':''}</div><div class="lb-time">${e.time}</div>`;
+      lbItems.appendChild(d);
+    });
+  } else { lb.style.display='none'; }
+
+  // Items preview
+  const il=document.getElementById('preview-items-list');
+  il.innerHTML='';
+  hunt.items.forEach(item=>{
+    const d=document.createElement('div');
+    d.style.cssText='background:white;border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);';
+    d.innerHTML=`<span style="font-size:24px;">${item.emoji}</span><div><div style="font-weight:600;font-size:14px;color:var(--text-dark);">${item.title}</div><div style="font-size:12px;color:var(--text-light);">📍 ${item.location} · +${item.points} pts</div></div>`;
+    il.appendChild(d);
+  });
+
+  showScreen('hunt-preview');
+}
+
+function updatePreviewCountdown(hunt){
+  const diff=hunt.expires-new Date();
+  if(diff<=0){document.getElementById('preview-countdown').textContent='ENDED';return;}
+  const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+  document.getElementById('preview-countdown').textContent=
+    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ════════════════════════════════════════════════
+//  PAYMENT
+// ════════════════════════════════════════════════
+function initiatePayment(){
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===state.currentHuntId);
+  document.getElementById('pay-hunt-name').textContent=hunt.title;
+  document.getElementById('pay-hunt-type').textContent=
+    hunt.type==='weekly'?`Weekly Hunt · ${hunt.expiresLabel}`:
+    hunt.type==='monthly'?`Monthly Hunt · ${hunt.expiresLabel}`:
+    `Live Event · ${hunt.expiresLabel}`;
+  const priceStr=`$${hunt.price.toFixed(2)}`;
+  document.getElementById('pay-price').textContent=priceStr;
+  document.getElementById('pay-btn-price').textContent=priceStr;
+
+  // Reset modal to form view
+  document.getElementById('payment-form-view').style.display='block';
+  document.getElementById('payment-processing-view').style.display='none';
+  document.getElementById('payment-success-view').style.display='none';
+  document.getElementById('payment-modal').classList.add('open');
+}
+
+function closePaymentModal(){
+  document.getElementById('payment-modal').classList.remove('open');
+}
+
+function formatCard(el){
+  let v=el.value.replace(/\D/g,'').substring(0,16);
+  el.value=v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExpiry(el){
+  let v=el.value.replace(/\D/g,'').substring(0,4);
+  if(v.length>2) v=v.substring(0,2)+' / '+v.substring(2);
+  el.value=v;
+}
+
+function processPayment(){
+  // Basic validation
+  const card=document.getElementById('pay-card').value.replace(/\s/g,'');
+  const expiry=document.getElementById('pay-expiry').value;
+  const cvv=document.getElementById('pay-cvv').value;
+  if(card.length<16){showToast('Please enter a valid card number');return;}
+  if(expiry.length<7){showToast('Please enter expiry date');return;}
+  if(cvv.length<3){showToast('Please enter CVV');return;}
+
+  // Show processing
+  document.getElementById('payment-form-view').style.display='none';
+  document.getElementById('payment-processing-view').style.display='block';
+
+  // Simulate Stripe processing (replace with real Stripe.js in production)
+  setTimeout(()=>{
+    document.getElementById('payment-processing-view').style.display='none';
+    document.getElementById('payment-success-view').style.display='block';
+
+    // Unlock hunt
+    if(!state.unlockedHunts.includes(state.currentHuntId)){
+      state.unlockedHunts.push(state.currentHuntId);
+    }
+    saveState();
+
+    setTimeout(()=>{
+      closePaymentModal();
+      openHunt(state.currentHuntId);
+    },1800);
+  },2200);
+}
+
+// ════════════════════════════════════════════════
+//  HUNT DETAIL
+// ════════════════════════════════════════════════
+function openHunt(huntId){
+  state.currentHuntId=huntId;
+  const hunt=ALL_HUNTS.find(h=>h.id===huntId);
+  const header=document.getElementById('hunt-detail-header');
+  header.style.background=hunt.gradInline||gradToInline(hunt.gradClass);
+  document.getElementById('hunt-detail-emoji').textContent=hunt.emoji;
+  document.getElementById('hunt-detail-title').textContent=hunt.title;
+  document.getElementById('hunt-detail-desc').textContent=hunt.desc;
+  document.getElementById('hunt-detail-items').textContent=hunt.items.length;
+  document.getElementById('hunt-detail-points').textContent=hunt.totalPoints;
+  document.getElementById('hunt-detail-diff-chip').textContent='⚡ '+hunt.difficulty;
+
+  // Timer for event hunts
+  const timerChip=document.getElementById('hunt-timer-chip');
+  if(hunt.timed){
+    if(!state.huntStartTimes[huntId]) state.huntStartTimes[huntId]=Date.now();
+    timerChip.style.display='flex';
+    startTimer(huntId);
+  } else {
+    timerChip.style.display='none';
+    stopTimer();
+  }
+
+  renderItemsList(hunt);
+  showScreen('hunt-detail');
+}
+
+function startTimer(huntId){
+  stopTimer();
+  state.timerInterval=setInterval(()=>{
+    const elapsed=Date.now()-(state.huntStartTimes[huntId]||Date.now());
+    document.getElementById('hunt-timer-display').textContent=formatElapsed(elapsed);
+  },1000);
+}
+function stopTimer(){ if(state.timerInterval){clearInterval(state.timerInterval);state.timerInterval=null;} }
+function formatElapsed(ms){
+  const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000), s=Math.floor((ms%60000)/1000);
+  return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function getHuntPoints(huntId){
+  const hunt=ALL_HUNTS.find(h=>h.id===huntId);
+  const prog=state.progress[huntId]||{completedItems:[]};
+  return prog.completedItems.reduce((s,id)=>{const it=hunt.items.find(i=>i.id===id);return s+(it?it.points:0);},0);
+}
+
+function renderItemsList(hunt){
+  const prog=state.progress[hunt.id]||{completedItems:[]};
+  const done=prog.completedItems.length, total=hunt.items.length;
+  const c=document.getElementById('hunt-items-list');
+  c.innerHTML='';
+
+  // Summary card
+  const summary=document.createElement('div');
+  summary.style.cssText='background:white;border-radius:18px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);display:flex;align-items:center;gap:14px;';
+  summary.innerHTML=`<div style="flex:1;"><div style="font-size:13px;color:var(--text-light);margin-bottom:6px;font-weight:500;">${done} of ${total} items found</div><div style="height:8px;background:var(--sand-dark);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${Math.round((done/total)*100)}%;background:linear-gradient(90deg,var(--teal),var(--ocean-light));border-radius:4px;transition:width .4s;"></div></div></div><div style="text-align:center;"><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--gold);line-height:1;">${getHuntPoints(hunt.id)}</div><div style="font-size:11px;color:var(--text-light);">pts earned</div></div>`;
+  c.appendChild(summary);
+
+  if(hunt.isPremium){
+    const tier=calculateRewardTier(getHuntPoints(hunt.id),hunt.totalPoints,done,total,hunt);
+    if(tier){
+      const tb=document.createElement('div');
+      tb.style.cssText=`border-radius:14px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;`;
+      tb.className=tier.color;
+      tb.innerHTML=`<span style="font-size:28px;">${tier.medal}</span><div><div style="font-weight:700;font-size:13px;">Current Tier: ${tier.name}</div><div style="font-size:12px;margin-top:2px;">${tier.reward}</div></div>`;
+      c.appendChild(tb);
+    }
+  }
+
+  const lbl=document.createElement('div');
+  lbl.className='section-label';
+  lbl.style='margin-bottom:10px;';
+  lbl.textContent='Items to Find';
+  c.appendChild(lbl);
+
+  hunt.items.forEach(item=>{
+    const isDone=prog.completedItems.includes(item.id);
+    const card=document.createElement('div');
+    card.className='item-card'+(isDone?' completed':'');
+    card.style.background=isDone?'#f0faf8':'white';
+    card.innerHTML=`<div class="item-icon-circle" style="background:${isDone?'#e0f5f0':'var(--sand)'};">${item.emoji}</div><div class="item-card-content"><div class="item-card-title">${item.title}</div><div class="item-card-subtitle">${item.location}</div></div><div class="item-points-badge">+${item.points}</div><div class="item-check ${isDone?'done':''}">${isDone?'✓':''}</div>`;
+    card.onclick=()=>openItem(hunt.id,item.id);
+    c.appendChild(card);
+  });
+
+  const btn=document.getElementById('hunt-submit-btn');
+  if(done===total && hunt.isPremium){
+    btn.textContent='🏆 See My Certificate & Rewards!';
+    btn.style.background='linear-gradient(135deg,var(--gold-dark),var(--gold))';
+    btn.onclick=()=>showCertificate(hunt.id);
+  } else if(done===total){
+    btn.textContent='🎉 See My Results!';
+    btn.style.background='linear-gradient(135deg,var(--teal),#1aad9a)';
+    btn.onclick=()=>showFreeComplete();
+  } else if(hunt.isPremium&&done>0){
+    btn.textContent=`🏆 ${done}/${total} done — View Certificate`;
+    btn.style.background='linear-gradient(135deg,var(--gold-dark),var(--gold))';
+    btn.onclick=()=>showCertificate(hunt.id);
+  } else {
+    btn.textContent=`🏁 Progress: ${done}/${total}`;
+    btn.style.background='linear-gradient(135deg,var(--coral),var(--coral-light))';
+    btn.onclick=()=>showFreeComplete();
+  }
+}
+
+// ════════════════════════════════════════════════
+//  REWARD TIER LOGIC
+// ════════════════════════════════════════════════
+function calculateRewardTier(points, totalPts, done, total, hunt){
+  if(done===0) return null;
+  const pct=(done/total)*100;
+  const prizes=hunt.prizes;
+  if(!prizes) return null;
+
+  if(hunt.type==='event'){
+    // For events: all finishers get finisher tier; higher placement tracked at Chamber
+    if(done===total) return {...prizes.finisher};
+    return {...prizes.finisher, name:'Sprint In Progress', req:'Complete all stops to earn finisher tier'};
+  }
+
+  // Weekly/Monthly tier logic by completion percentage
+  if(pct>=100 && prizes.platinum) return {...prizes.platinum};
+  if(pct>=75 && prizes.gold) return {...prizes.gold};
+  if(pct>=50 && prizes.silver) return {...prizes.silver};
+  if(pct>=1 && prizes.bronze) return {...prizes.bronze};
+  return null;
+}
+
+// ════════════════════════════════════════════════
+//  ITEM DETAIL
+// ════════════════════════════════════════════════
+function openItem(huntId, itemId){
+  state.currentHuntId=huntId; state.currentItemId=itemId;
+  const hunt=ALL_HUNTS.find(h=>h.id===huntId);
+  const item=hunt.items.find(i=>i.id===itemId);
+  const prog=state.progress[huntId]||{completedItems:[]};
+  const isDone=prog.completedItems.includes(itemId);
+  const header=document.getElementById('item-detail-header');
+  header.style.background=hunt.gradInline||gradToInline(hunt.gradClass);
+  document.getElementById('item-detail-icon').textContent=item.emoji;
+  document.getElementById('item-detail-title').textContent=item.title;
+  document.getElementById('item-detail-location').textContent='📍 '+item.location;
+  document.getElementById('item-detail-pts').textContent='+'+item.points+' pts';
+  const capturedPhoto=state.capturedPhotos[itemId];
+  document.getElementById('item-detail-body').innerHTML=`
+    <div class="info-card"><div class="info-card-title">What to Find</div><p>${item.desc}</p></div>
+    <div class="hint-card"><span style="font-size:22px;flex-shrink:0;margin-top:2px;">💡</span><div class="hint-text"><strong>Island Insider Tip:</strong> ${item.hint}</div></div>
+    <div class="photo-zone">
+      <div class="info-card-title" style="text-align:left;margin-bottom:10px;">${item.isReceipt?'📄 Photo or Receipt':'📷 Photograph It'}</div>
+      ${capturedPhoto
+        ?`<img id="photo-preview-img" class="photo-preview has-photo" src="${capturedPhoto}" alt="Captured"><div style="text-align:center;"><button class="retake-btn" onclick="startCamera()">Retake photo</button></div>`
+        :`<div class="camera-placeholder"><div class="camera-placeholder-icon">${item.isReceipt?'🧾':'📷'}</div><div class="camera-placeholder-text">${item.isReceipt?'Photograph your receipt or purchase':'Photograph the '+item.type}</div></div>
+         <button class="camera-btn" onclick="startCamera()"><span>📷</span> Open Camera</button>
+         <div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">Or upload from your library:</div>
+         <input type="file" accept="image/*" onchange="handleFileUpload(event)" style="width:100%;margin-bottom:12px;font-size:13px;">`
+      }
+    </div>
+    ${isDone
+      ?`<div class="already-done-banner"><span style="font-size:24px;">✅</span><div><div>Item Complete!</div><div style="font-size:12px;font-weight:400;color:rgba(255,255,255,.8);">+${item.points} points earned</div></div></div>`
+      :`<button class="mark-complete-btn" id="complete-item-btn" onclick="markItemComplete()" ${!capturedPhoto?'disabled':''}> ✅ Mark as Found (+${item.points} pts)</button>
+       ${!capturedPhoto?`<div style="font-size:12px;color:var(--text-light);text-align:center;margin-top:8px;">Take a photo first to unlock completion</div>`:''}`
+    }
+    <div style="height:40px;"></div>
+  `;
+  showScreen('item-detail');
+}
+
+function backToHunt(){
+  const hunt=ALL_HUNTS.find(h=>h.id===state.currentHuntId);
+  renderItemsList(hunt);
+  showScreen('hunt-detail');
+}
+
+function handleFileUpload(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    state.capturedPhotos[state.currentItemId]=ev.target.result;
+    const prog=state.progress[state.currentHuntId];
+    if(!prog.photosTaken.includes(state.currentItemId)) prog.photosTaken.push(state.currentItemId);
+    saveState(); openItem(state.currentHuntId,state.currentItemId);
+  };
+  r.readAsDataURL(f);
+}
+
+function markItemComplete(){
+  const huntId=state.currentHuntId, itemId=state.currentItemId;
+  const prog=state.progress[huntId];
+  if(!prog.completedItems.includes(itemId)) prog.completedItems.push(itemId);
+  saveState();
+  const hunt=ALL_HUNTS.find(h=>h.id===huntId);
+  const item=hunt.items.find(i=>i.id===itemId);
+  showToast(`+${item.points} pts! "${item.title}" found! 🎉`);
+  openItem(huntId,itemId);
+  const done=prog.completedItems.length, total=hunt.items.length;
+  if(done===total){
+    setTimeout(()=>hunt.isPremium?showCertificate(huntId):showFreeComplete(),1800);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  CERTIFICATE (PREMIUM COMPLETION)
+// ════════════════════════════════════════════════
+function generateCode(huntId,userName){
+  const ts=Date.now().toString(36).toUpperCase().slice(-4);
+  const namePart=(userName||'GUEST').replace(/\s/g,'').toUpperCase().slice(0,3);
+  const typeMap={weekly:'WK',monthly:'MO',event:'EV'};
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===huntId);
+  const type=typeMap[hunt?.type||'weekly']||'HT';
+  const rand=Math.random().toString(36).substring(2,6).toUpperCase();
+  return `BI-${type}-${namePart}${ts}-${rand}`;
+}
+
+function buildQRPayload(huntId, code, pts, done, total, tier){
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===huntId);
+  return JSON.stringify({
+    v:1, code, name:state.user.name||'Guest',
+    hunt:hunt.title, huntId:hunt.id, type:hunt.type,
+    pts, done, total, tier:tier.name, reward:tier.reward,
+    ts:Date.now(),
+    photos:Object.keys(state.capturedPhotos).filter(k=>hunt.items.some(i=>i.id===k)).length
+  });
+}
+
+function renderQR(containerId, text, size=160){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML='';
+  try{
+    new QRCode(el,{text, width:size, height:size,
+      colorDark:'#0b3d5e', colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){
+    // Fallback plain code display if library fails
+    el.style.cssText=`width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#f0f4f8;border-radius:8px;font-size:11px;font-weight:600;color:#0b3d5e;text-align:center;padding:8px;word-break:break-all;`;
+    el.textContent=text.length>40?text.substring(0,40)+'…':text;
+  }
+}
+
+function showPresentationMode(){
+  const huntId=state.currentHuntId;
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===huntId);
+  const prog=state.progress[huntId]||{completedItems:[]};
+  const done=prog.completedItems.length, total=hunt.items.length;
+  const pts=getHuntPoints(huntId);
+  const tier=calculateRewardTier(pts,hunt.totalPoints,done,total,hunt)||{medal:'🏅',name:'Explorer',reward:'Complete more items to earn rewards',color:'tier-bronze'};
+  const code=state.completionCodes[huntId]||'N/A';
+
+  // Populate header
+  document.getElementById('pres-hunt-name').textContent=hunt.title;
+  document.getElementById('pres-user-name').textContent=state.user.name||'Explorer';
+  document.getElementById('pres-tier-medal').textContent=tier.medal;
+  document.getElementById('pres-tier-name').textContent=tier.name;
+  document.getElementById('pres-tier-reward').textContent=tier.reward;
+  document.getElementById('pres-tier-label').textContent=tier.req||'REWARD TIER';
+
+  // Color tier banner
+  const banner=document.getElementById('pres-tier-banner');
+  banner.className='pres-tier-banner '+tier.color;
+
+  // Stats
+  const photoCount=Object.keys(state.capturedPhotos).filter(k=>hunt.items.some(i=>i.id===k)).length;
+  document.getElementById('pres-pts').textContent=pts;
+  document.getElementById('pres-items').textContent=`${done}/${total}`;
+  document.getElementById('pres-photos-count').textContent=photoCount;
+
+  // Code
+  document.getElementById('pres-code-text').textContent=code;
+
+  // QR code (large)
+  const payload=buildQRPayload(huntId,code,pts,done,total,tier);
+  setTimeout(()=>renderQR('pres-qr-div',payload,200),100);
+
+  // Photo grid
+  const grid=document.getElementById('pres-photo-grid');
+  grid.innerHTML='';
+  hunt.items.forEach(item=>{
+    const isDone=prog.completedItems.includes(item.id);
+    if(!isDone) return;
+    const photo=state.capturedPhotos[item.id];
+    const card=document.createElement('div');
+    card.className='pres-photo-card';
+    card.innerHTML=`
+      ${photo?`<img class="pres-photo-img" src="${photo}" alt="${item.title}">`
+              :`<div class="pres-photo-placeholder">${item.emoji}</div>`}
+      <div class="pres-photo-info">
+        <div class="pres-photo-name">${item.title}</div>
+        <div class="pres-photo-time">📍 ${item.location}</div>
+        <div class="pres-photo-check">✅ Completed · +${item.points}pts</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  // Request screen stay-awake (keeps screen on while showing staff)
+  if(navigator.wakeLock) navigator.wakeLock.request('screen').catch(()=>{});
+
+  document.getElementById('presentation-overlay').classList.add('open');
+  window.scrollTo(0,0);
+}
+
+function exitPresentationMode(){
+  document.getElementById('presentation-overlay').classList.remove('open');
+}
+
+function showCertificate(huntId){
+  stopTimer();
+  state.currentHuntId=huntId;
+  const hunt=PREMIUM_HUNTS.find(h=>h.id===huntId);
+  const prog=state.progress[huntId]||{completedItems:[]};
+  const done=prog.completedItems.length, total=hunt.items.length;
+  const pts=getHuntPoints(huntId);
+  const pct=Math.round((done/total)*100);
+
+  // Generate/retrieve code
+  if(!state.completionCodes[huntId]){
+    state.completionCodes[huntId]=generateCode(huntId,state.user.name);
+    saveState();
+  }
+  const code=state.completionCodes[huntId];
+
+  // Header
+  document.getElementById('cert-header-icon').textContent=hunt.emoji;
+  document.getElementById('cert-title').textContent=done===total?`${hunt.title} Complete!`:`${hunt.title} — In Progress`;
+  document.getElementById('cert-hunt-name').textContent=`${hunt.type.charAt(0).toUpperCase()+hunt.type.slice(1)} Hunt · ${done===total?'Completed':''+done+'/'+total+' stops'}`;
+
+  // Reward tier
+  const tier=calculateRewardTier(pts,hunt.totalPoints,done,total,hunt)||{medal:'🏅',name:'Explorer',reward:'Visit the Chamber to start your rewards journey!',color:'tier-bronze',label:'PARTICIPATION'};
+  const tierCard=document.getElementById('cert-tier-card');
+  tierCard.className='reward-tier-card '+tier.color;
+  document.getElementById('cert-tier-medal').textContent=tier.medal;
+  document.getElementById('cert-tier-label').textContent=tier.req||'REWARD TIER';
+  document.getElementById('cert-tier-name').textContent=tier.name;
+  document.getElementById('cert-tier-reward').textContent=tier.reward;
+  document.getElementById('chamber-reward-name').textContent=tier.reward;
+
+  // Stats
+  document.getElementById('cert-points').textContent=pts;
+  document.getElementById('cert-points-pct').textContent=`of ${hunt.totalPoints} possible (${pct}%)`;
+  document.getElementById('cert-items').textContent=`${done}/${total}`;
+  document.getElementById('cert-date').textContent=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  // Code + QR
+  document.getElementById('cert-code').textContent=code;
+  const tier2=calculateRewardTier(pts,hunt.totalPoints,done,total,hunt)||{medal:'🏅',name:'Explorer',reward:'',color:'tier-bronze'};
+  const payload=buildQRPayload(huntId,code,pts,done,total,tier2);
+  setTimeout(()=>renderQR('qr-div',payload,160),150);
+
+  // Event leaderboard
+  const lbSection=document.getElementById('cert-leaderboard');
+  if(hunt.type==='event'&&hunt.mockLeaderboard){
+    lbSection.style.display='block';
+    const elapsed=state.huntStartTimes[huntId]?formatElapsed(Date.now()-state.huntStartTimes[huntId]):'–';
+    const lbItems=document.getElementById('cert-leaderboard-items');
+    lbItems.innerHTML='';
+    // Add user to leaderboard
+    const myEntry={rank:hunt.mockLeaderboard.length+1,name:state.user.name||'You',time:elapsed,you:true};
+    [...hunt.mockLeaderboard,myEntry].forEach(e=>{
+      const rankClass=e.rank===1?'gold-rank':e.rank===2?'silver-rank':e.rank===3?'bronze-rank':'';
+      const d=document.createElement('div');
+      d.className='leaderboard-item';
+      d.style=e.you?'background:var(--sand);border-radius:10px;padding:10px 8px;':'';
+      d.innerHTML=`<div class="lb-rank ${rankClass}">${e.rank<=3?['🥇','🥈','🥉'][e.rank-1]:e.rank}</div><div class="lb-name">${e.name} ${e.you?'<span class="lb-you">YOU</span>':''}</div><div class="lb-time">${e.time}</div>`;
+      lbItems.appendChild(d);
+    });
+  } else { lbSection.style.display='none'; }
+
+  // Share text
+  document.getElementById('cert-share-text').textContent=
+    `I completed the ${hunt.title} on @BlockIslandApp! Earned ${pts} points${done===total?' and completed ALL '+total+' stops':' — '+done+'/'+total+' stops found'}. Claiming my Chamber reward 🏆 #BlockIsland #BlockIslandApp`;
+
+  showScreen('certificate');
+}
+
+function copyCode(){
+  const code=document.getElementById('cert-code').textContent;
+  try{navigator.clipboard.writeText(code);showToast('Code copied! ✅');}
+  catch(e){showToast('Code: '+code);}
+}
+
+// ════════════════════════════════════════════════
+//  FREE HUNT COMPLETION
+// ════════════════════════════════════════════════
+function showFreeComplete(){
+  const huntId=state.currentHuntId;
+  const hunt=FREE_HUNTS.find(h=>h.id===huntId)||ALL_HUNTS.find(h=>h.id===huntId);
+  const prog=state.progress[huntId]||{completedItems:[]};
+  const pts=getHuntPoints(huntId);
+  const done=prog.completedItems.length, total=hunt?.items.length||0;
+  const photos=Object.keys(state.capturedPhotos).filter(k=>hunt?.items.some(i=>i.id===k)).length;
+  const pct=Math.round((done/total)*100);
+  let rank='🌊';
+  if(pct>=100)rank='🏆';else if(pct>=75)rank='🌟';else if(pct>=50)rank='🦅';else if(pct>=25)rank='⚓';
+  document.getElementById('complete-points').textContent=pts;
+  document.getElementById('complete-items').textContent=`${done}/${total}`;
+  document.getElementById('complete-photos').textContent=photos;
+  document.getElementById('complete-rank').textContent=rank;
+  document.getElementById('complete-subtitle').textContent=done===total?`🎊 You completed the entire ${hunt?.title||'hunt'}! Want real prizes? Try a premium hunt below.`:`You found ${done} of ${total} stops on the ${hunt?.title||'hunt'}. Keep exploring!`;
+  showScreen('complete');
+}
+
+function showHuntComplete(){
+  const hunt=ALL_HUNTS.find(h=>h.id===state.currentHuntId);
+  hunt?.isPremium?showCertificate(state.currentHuntId):showFreeComplete();
+}
+
+// ════════════════════════════════════════════════
+//  SHARE
+// ════════════════════════════════════════════════
+function shareResults(){
+  const text=document.getElementById('cert-share-text')?.textContent||'I explored Block Island! #BlockIslandApp';
+  if(navigator.share){navigator.share({title:'Block Island Scavenger Hunt',text,url:'https://m.theblockislandapp.com'}).catch(()=>copyToClipboard(text));}
+  else copyToClipboard(text);
+}
+function copyToClipboard(text){try{navigator.clipboard.writeText(text);showToast('Copied to clipboard! ✅');}catch(e){showToast('Share text ready!');}}
+
+// ════════════════════════════════════════════════
+//  CAMERA
+// ════════════════════════════════════════════════
+async function startCamera(){
+  const hunt=ALL_HUNTS.find(h=>h.id===state.currentHuntId);
+  const item=hunt?.items.find(i=>i.id===state.currentItemId);
+  document.getElementById('camera-item-label').textContent='📷 Photograph: '+(item?.title||'');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false});
+    state.cameraStream=stream;
+    document.getElementById('camera-video').srcObject=stream;
+    document.getElementById('camera-container').classList.add('visible');
+  }catch(err){
+    showToast('Camera not available — use file upload 📁');
+    const input=document.createElement('input');
+    input.type='file'; input.accept='image/*'; input.capture='environment';
+    input.onchange=handleFileUpload; input.click();
+  }
+}
+function closeCamera(){
+  if(state.cameraStream){state.cameraStream.getTracks().forEach(t=>t.stop());state.cameraStream=null;}
+  document.getElementById('camera-container').classList.remove('visible');
+}
+function capturePhoto(){
+  const video=document.getElementById('camera-video');
+  const canvas=document.getElementById('camera-canvas');
+  canvas.width=video.videoWidth||1280; canvas.height=video.videoHeight||720;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataURL=canvas.toDataURL('image/jpeg',.85);
+  state.capturedPhotos[state.currentItemId]=dataURL;
+  const prog=state.progress[state.currentHuntId];
+  if(!prog.photosTaken.includes(state.currentItemId)) prog.photosTaken.push(state.currentItemId);
+  saveState(); closeCamera(); showToast('Photo captured! 📸');
+  setTimeout(()=>openItem(state.currentHuntId,state.currentItemId),300);
+}
+
+// ════════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ════════════════════════════════════════════════
+//  SECTION TOGGLES
+// ════════════════════════════════════════════════
+const sectionState={premium:true, free:true};
+function toggleSection(id){
+  sectionState[id]=!sectionState[id];
+  const section=document.getElementById('section-'+id);
+  const btn=document.getElementById('toggle-btn-'+id);
+  if(sectionState[id]){ section.classList.remove('collapsed'); btn.classList.remove('collapsed'); }
+  else { section.classList.add('collapsed'); btn.classList.add('collapsed'); }
+}
+
+// ════════════════════════════════════════════════
+//  LEADERBOARD
+// ════════════════════════════════════════════════
+
+// Seeded mock players with Block Island–themed names
+const MOCK_PLAYERS = [
+  {id:'p1', name:'Jake M.',      initials:'JM', color:'#1a6b8a', badges:['🏆','💎','🦅'], huntsCompleted:4, weekPts:480, premiumPts:620},
+  {id:'p2', name:'Sarah K.',     initials:'SK', color:'#3a7d44', badges:['🥇','🌊','🦞'], huntsCompleted:3, weekPts:390, premiumPts:510},
+  {id:'p3', name:'Ryan P.',      initials:'RP', color:'#7b3fa0', badges:['🏄','🔭','🌿'], huntsCompleted:3, weekPts:340, premiumPts:445},
+  {id:'p4', name:'Emma T.',      initials:'ET', color:'#c0392b', badges:['🦀','⚓','🎣'], huntsCompleted:2, weekPts:295, premiumPts:380},
+  {id:'p5', name:'Chris D.',     initials:'CD', color:'#d4a94a', badges:['🏛️','⛪','🪨'], huntsCompleted:2, weekPts:270, premiumPts:310},
+  {id:'p6', name:'Mia L.',       initials:'ML', color:'#e8614a', badges:['🌅','🦒','🚣'], huntsCompleted:2, weekPts:240, premiumPts:285},
+  {id:'p7', name:'Tom B.',       initials:'TB', color:'#0b3d5e', badges:['💡','🧁','☕'], huntsCompleted:1, weekPts:185, premiumPts:220},
+  {id:'p8', name:'Lily R.',      initials:'LR', color:'#22c5b0', badges:['🌸','🦆','💨'], huntsCompleted:1, weekPts:160, premiumPts:190},
+  {id:'p9', name:'Owen S.',      initials:'OS', color:'#6a3a2a', badges:['🐦','🌊','🔍'], huntsCompleted:1, weekPts:130, premiumPts:155},
+  {id:'p10',name:'Ava H.',       initials:'AH', color:'#2fa8c8', badges:['⛵','🏨','📜'], huntsCompleted:1, weekPts:110, premiumPts:130},
+  {id:'p11',name:'Noah C.',      initials:'NC', color:'#a07820', badges:['🎣','🦞'], huntsCompleted:1, weekPts:90,  premiumPts:105},
+  {id:'p12',name:'Grace F.',     initials:'GF', color:'#1a5c2a', badges:['🌿','🌸'], huntsCompleted:1, weekPts:75,  premiumPts:88},
+];
+
+let lbTab = 'all';
+let lbFilter = 'all';
+
+function getUserEntry(){
+  const myPts = getTotalPoints();
+  const myHunts = Object.keys(state.progress).filter(id=>state.progress[id].completedItems.length>0).length;
+  const myBadges = [];
+  if(myPts>0) myBadges.push('🌊');
+  if(state.unlockedHunts.length>0) myBadges.push('⭐');
+  if(myHunts>=3) myBadges.push('🏝️');
+  return {
+    id:'you', name:state.user.name||'You', initials:(state.user.name||'You').slice(0,2).toUpperCase(),
+    color:'var(--teal)', badges:myBadges, huntsCompleted:myHunts,
+    weekPts:myPts, premiumPts:myPts, allPts:myPts, isYou:true
+  };
+}
+
+function getScoreField(tab){ return tab==='week'?'weekPts':tab==='premium'?'premiumPts':'weekPts'; }
+
+function buildLbData(tab, filter){
+  const field = getScoreField(tab);
+  const me = getUserEntry();
+  me.allPts = me[field]||0;
+
+  let players = MOCK_PLAYERS.map(p=>({...p, allPts:p[field]}));
+
+  // For premium tab only show users with premiumPts
+  if(tab==='premium') players = players.filter(p=>p.premiumPts>0);
+
+  // For hunt filter — simulate by randomly scaling scores
+  if(filter!=='all' && filter!=='premium'){
+    const huntMap={explorer:.9,nature:.75,history:.7,foodie:.65,thrill:.6};
+    const scale = huntMap[filter]||.7;
+    players = players.map(p=>({...p, allPts:Math.round(p.allPts*scale*(0.7+Math.random()*.5))}));
+    me.allPts = Math.round(me.allPts * scale);
+  }
+
+  // Combine and sort
+  const all = [...players, me].sort((a,b)=>b.allPts-a.allPts);
+
+  // Assign ranks
+  all.forEach((p,i)=>{ p.rank = i+1; });
+
+  return all;
+}
+
+function avatarColor(player){
+  if(player.isYou) return 'linear-gradient(135deg,var(--teal),#1aad9a)';
+  return player.color;
+}
+
+function renderLeaderboard(){
+  const data = buildLbData(lbTab, lbFilter);
+  const top3 = data.slice(0,3);
+  const rest = data.slice(3);
+  const me = data.find(p=>p.isYou);
+
+  // Podium — order: 2nd | 1st | 3rd
+  const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
+  const podiumClasses = top3[1] && top3[0] ? ['podium-2nd','podium-1st','podium-3rd'] : ['podium-1st'];
+  const podiumEl = document.getElementById('lb-podium');
+  podiumEl.innerHTML = '';
+
+  podiumOrder.forEach((player, i)=>{
+    const cls = podiumClasses[i]||'podium-3rd';
+    const rankNum = cls==='podium-1st'?1:cls==='podium-2nd'?2:3;
+    const col = document.createElement('div');
+    col.className = `podium-col ${cls}`;
+    const isYou = player.isYou;
+    col.innerHTML = `
+      ${rankNum===1?`<div class="podium-crown">👑</div>`:''}
+      <div class="podium-avatar" style="background:${avatarColor(player)};">${player.initials}</div>
+      <div class="podium-name" style="${isYou?'color:var(--teal);font-size:13px;':''}">
+        ${player.name}${isYou?' (You)':''}
+      </div>
+      <div class="podium-pts">${(player.allPts||0).toLocaleString()} pts</div>
+      <div class="podium-block"><div class="podium-rank-num">${rankNum}</div></div>
+    `;
+    podiumEl.appendChild(col);
+  });
+
+  // Your rank card
+  const yourRankEl = document.getElementById('lb-your-rank');
+  if(me){
+    document.getElementById('lb-your-num').textContent = `#${me.rank}`;
+    document.getElementById('lb-your-name').textContent = me.name;
+    const totalPlayers = data.length;
+    const topPct = Math.round((1 - (me.rank-1)/totalPlayers)*100);
+    document.getElementById('lb-your-sub').textContent =
+      (me.allPts||0)>0
+        ? `${(me.allPts||0).toLocaleString()} pts · Top ${topPct}% of explorers · ${me.huntsCompleted} hunt${me.huntsCompleted!==1?'s':''} completed`
+        : 'Start a hunt to earn points and enter the leaderboard!';
+    yourRankEl.style.display = 'flex';
+  }
+
+  // Ranked list (4th onward)
+  const listEl = document.getElementById('lb-list');
+  listEl.innerHTML = '';
+
+  if(rest.length===0 && top3.length===0){
+    listEl.innerHTML = `<div style="text-align:center;padding:48px 24px;color:var(--text-light);"><div style="font-size:48px;margin-bottom:12px;">🏝️</div><div style="font-weight:700;font-size:16px;color:var(--text-dark);margin-bottom:6px;">No explorers yet!</div><div style="font-size:13px;">Be the first to complete a hunt.</div></div>`;
+    return;
+  }
+
+  rest.forEach(player=>{
+    const isYou = player.isYou;
+    const item = document.createElement('div');
+    item.className = 'lb-list-item' + (isYou?' is-you':'');
+    const badges = (player.badges||[]).slice(0,4).map(b=>`<span class="lb-badge">${b}</span>`).join('');
+    item.innerHTML = `
+      <div class="lb-num" style="${player.rank<=10?'color:var(--text-dark);font-size:20px;':''}">${player.rank}</div>
+      <div class="lb-avatar-sm" style="background:${avatarColor(player)};">${player.initials}</div>
+      <div class="lb-info">
+        <div class="lb-info-name">
+          ${player.name}
+          ${isYou?`<span class="lb-you-tag">YOU</span>`:''}
+        </div>
+        <div class="lb-info-sub">${player.huntsCompleted} hunt${player.huntsCompleted!==1?'s':''} completed</div>
+        ${badges?`<div class="lb-badge-row">${badges}</div>`:''}
+      </div>
+      <div class="lb-pts-col">
+        <div class="lb-pts-val">${(player.allPts||0).toLocaleString()}</div>
+        <div class="lb-pts-lbl">points</div>
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+
+  // If user isn't in visible list (rank > shown), pin them at bottom of list
+  if(me && me.rank > data.length){
+    const pin = document.createElement('div');
+    pin.className = 'lb-list-item is-you';
+    pin.style.cssText = 'margin-top:16px;position:sticky;bottom:80px;';
+    pin.innerHTML = `<div class="lb-num">${me.rank}</div><div class="lb-avatar-sm" style="background:linear-gradient(135deg,var(--teal),#1aad9a);">${me.initials}</div><div class="lb-info"><div class="lb-info-name">${me.name} <span class="lb-you-tag">YOU</span></div><div class="lb-info-sub">${me.huntsCompleted} hunts · ${(me.allPts||0).toLocaleString()} pts</div></div>`;
+    listEl.appendChild(pin);
+  }
+}
+
+function showLeaderboard(){
+  lbTab = 'all'; lbFilter = 'all';
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('lb-tab-all').classList.add('active');
+  document.querySelectorAll('.lb-filter-chip').forEach((c,i)=>{ if(i===0)c.classList.add('active'); else c.classList.remove('active'); });
+  renderLeaderboard();
+  showScreen('leaderboard');
+}
+
+function setLbTab(tab){
+  lbTab = tab;
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('lb-tab-'+tab).classList.add('active');
+  renderLeaderboard();
+}
+
+function setLbFilter(filter, el){
+  lbFilter = filter;
+  document.querySelectorAll('.lb-filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderLeaderboard();
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  if(state.user.name!=='Explorer') renderAllHuntCards();
+  // Init pill on first nav-visible screen
+  requestAnimationFrame(()=>{
+    const active=document.querySelector('.nav-item.active');
+    if(active) positionNavPill(active);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BI Chamber — Staff Verification</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<style>
+:root{
+  --ocean:#0b3d5e;--ocean-mid:#1a6b8a;--ocean-light:#2fa8c8;
+  --teal:#22c5b0;--sand:#f5e9cc;--sand-dark:#e8d4a0;
+  --warm-white:#faf7f0;--text-dark:#1a2b38;--text-mid:#3d5a6e;--text-light:#7a9aaa;
+  --gold:#d4a94a;--gold-dark:#a07820;--green:#3a7d44;--coral:#e8614a;
+  --bg:#f0f4f8;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text-dark);min-height:100vh;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:white;position:relative;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── LOGIN SCREEN ── */
+#screen-login{background:linear-gradient(160deg,var(--ocean) 0%,var(--ocean-mid) 55%,var(--teal) 100%);align-items:center;justify-content:center;padding:32px 24px;}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-island{font-size:64px;display:block;margin-bottom:12px;}
+.login-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:white;line-height:1.2;margin-bottom:4px;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.65);}
+.login-card{background:white;border-radius:24px;padding:28px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2);}
+.login-card-title{font-size:15px;font-weight:600;color:var(--text-mid);margin-bottom:16px;}
+.staff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.staff-btn{border:2px solid var(--sand-dark);border-radius:16px;padding:14px 10px;cursor:pointer;background:white;font-family:'DM Sans',sans-serif;text-align:center;transition:border-color .15s,background .15s;}
+.staff-btn:active{transform:scale(.97);}
+.staff-btn.selected{border-color:var(--ocean);background:linear-gradient(135deg,#e8f4fc,#f0f8ff);}
+.staff-avatar{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:white;margin:0 auto 8px;}
+.staff-name{font-size:13px;font-weight:700;color:var(--text-dark);}
+.staff-role{font-size:11px;color:var(--text-light);}
+.pin-section{margin-bottom:16px;}
+.pin-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;}
+.pin-input{width:100%;padding:16px;border:2px solid var(--sand-dark);border-radius:14px;font-size:24px;font-weight:700;letter-spacing:8px;text-align:center;font-family:monospace;color:var(--text-dark);outline:none;background:white;transition:border-color .2s;}
+.pin-input:focus{border-color:var(--ocean-light);}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));color:white;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.login-btn:active{opacity:.9;}
+.login-error{background:#fff0ee;border:1px solid #f4b0a0;border-radius:10px;padding:10px 14px;font-size:13px;color:var(--coral);text-align:center;margin-top:12px;display:none;}
+.login-note{font-size:11px;color:rgba(255,255,255,.5);text-align:center;margin-top:16px;}
+
+/* ── DASHBOARD ── */
+.dash-header{background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));padding:48px 24px 24px;color:white;position:relative;}
+.dash-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.dash-staff-pill{background:rgba(255,255,255,.15);border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;backdrop-filter:blur(6px);}
+.dash-staff-dot{width:8px;height:8px;background:#44ff88;border-radius:50%;}
+.logout-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.dash-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;margin-bottom:4px;}
+.dash-date{font-size:13px;color:rgba(255,255,255,.65);}
+.dash-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;}
+.dash-stat{background:rgba(255,255,255,.12);border-radius:14px;padding:14px 10px;text-align:center;backdrop-filter:blur(6px);}
+.dash-stat-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--gold);line-height:1;}
+.dash-stat-lbl{font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;letter-spacing:.5px;}
+.dash-body{flex:1;padding:20px 16px 100px;overflow-y:auto;}
+.scan-cta{background:linear-gradient(135deg,var(--teal),#1aad9a);border-radius:20px;padding:24px;text-align:center;margin-bottom:20px;cursor:pointer;border:none;width:100%;font-family:'DM Sans',sans-serif;transition:transform .15s;box-shadow:0 6px 20px rgba(34,197,176,.3);}
+.scan-cta:active{transform:scale(.98);}
+.scan-icon{font-size:48px;display:block;margin-bottom:10px;}
+.scan-cta-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:white;margin-bottom:4px;}
+.scan-cta-sub{font-size:13px;color:rgba(255,255,255,.8);}
+.manual-entry-card{background:white;border-radius:18px;padding:18px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.manual-entry-title{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:10px;}
+.manual-entry-row{display:flex;gap:10px;}
+.manual-input{flex:1;padding:13px 16px;border:2px solid var(--sand-dark);border-radius:12px;font-size:15px;font-family:monospace;font-weight:600;letter-spacing:2px;color:var(--text-dark);background:white;outline:none;text-transform:uppercase;}
+.manual-input:focus{border-color:var(--ocean-light);}
+.manual-btn{background:var(--ocean);color:white;border:none;border-radius:12px;padding:13px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.section-head{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:12px;}
+.history-item{background:white;border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.history-status{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.history-status.redeemed{background:#e8f5ec;}
+.history-status.rejected{background:#fff0ee;}
+.history-info{flex:1;min-width:0;}
+.history-name{font-weight:600;font-size:14px;color:var(--text-dark);}
+.history-meta{font-size:12px;color:var(--text-light);margin-top:2px;}
+.history-pts{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--gold-dark);}
+.empty-history{text-align:center;padding:32px;color:var(--text-light);}
+
+/* ── SCANNER ── */
+#screen-scanner{background:#000;}
+.scanner-header{position:absolute;top:0;left:0;right:0;padding:48px 20px 16px;background:linear-gradient(rgba(0,0,0,.7),transparent);z-index:10;display:flex;align-items:center;gap:12px;}
+.scanner-back{background:rgba(255,255,255,.15);border:none;color:white;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(6px);}
+.scanner-title{color:white;font-weight:700;font-size:16px;}
+#scanner-video{width:100%;height:100vh;object-fit:cover;display:block;}
+.scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.scan-frame{width:240px;height:240px;border:3px solid var(--teal);border-radius:20px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);position:relative;}
+.scan-corner{position:absolute;width:24px;height:24px;border-color:var(--teal);border-style:solid;}
+.scan-corner.tl{top:-3px;left:-3px;border-width:4px 0 0 4px;border-radius:6px 0 0 0;}
+.scan-corner.tr{top:-3px;right:-3px;border-width:4px 4px 0 0;border-radius:0 6px 0 0;}
+.scan-corner.bl{bottom:-3px;left:-3px;border-width:0 0 4px 4px;border-radius:0 0 0 6px;}
+.scan-corner.br{bottom:-3px;right:-3px;border-width:0 4px 4px 0;border-radius:0 0 6px 0;}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);animation:scanline 2s ease-in-out infinite;}
+@keyframes scanline{0%,100%{top:10%}50%{top:85%}}
+.scanner-hint{position:absolute;bottom:48px;left:0;right:0;text-align:center;color:rgba(255,255,255,.75);font-size:14px;font-weight:500;}
+#scanner-canvas{display:none;}
+
+/* ── VERIFICATION RESULT ── */
+#screen-result{background:var(--bg);display:flex;flex-direction:column;}
+.result-header{padding:72px 24px 24px;position:sticky;top:0;z-index:20;flex-shrink:0;}
+.result-back{position:absolute;top:14px;left:16px;background:rgba(255,255,255,.2);border:none;color:white;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(6px);z-index:30;}
+.result-status-icon{font-size:64px;display:block;text-align:center;margin:0 auto 12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.15));}
+.result-status-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;text-align:center;margin-bottom:4px;}
+.result-code-chip{background:var(--ocean);color:white;border-radius:10px;padding:5px 14px;font-family:monospace;font-size:13px;font-weight:700;letter-spacing:2px;display:table;margin:0 auto;}
+.result-body{flex:1;padding:16px 16px 100px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.result-user-card{background:white;border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.result-user-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.result-avatar{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--teal),#1aad9a);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:white;}
+.result-name{font-weight:700;font-size:18px;color:var(--text-dark);}
+.result-hunt{font-size:13px;color:var(--text-mid);margin-top:2px;}
+.result-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+/* Photo verification */
+.photo-verify-card{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.photo-verify-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.photo-verify-title{font-size:14px;font-weight:700;color:var(--text-dark);}
+.photo-verify-progress{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.photo-verify-progress.done{background:#e8f5ec;color:var(--green);}
+.photo-verify-progress.pending{background:#fff0ee;color:var(--coral);}
+.photo-item-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bg);}
+.photo-item-row:last-child{border-bottom:none;}
+.photo-item-emoji{font-size:24px;flex-shrink:0;}
+.photo-item-info{flex:1;min-width:0;}
+.photo-item-name{font-size:13px;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.photo-item-sub{font-size:11px;color:var(--text-light);margin-top:1px;}
+.photo-verify-btns{display:flex;gap:6px;flex-shrink:0;}
+.verify-btn{border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .1s;}
+.verify-btn:active{transform:scale(.92);}
+.verify-btn.approve{background:#e8f5ec;color:var(--green);}
+.verify-btn.approve.selected{background:var(--green);color:white;}
+.verify-btn.flag{background:#fff0ee;color:var(--coral);}
+.verify-btn.flag.selected{background:var(--coral);color:white;}
+.verify-status-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.verify-instruction{background:linear-gradient(135deg,#e8f4fc,#d8ecf8);border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;}
+.redeem-btn{flex:1;background:linear-gradient(135deg,var(--green),#2d6335);color:white;border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 6px 20px rgba(58,125,68,.3);transition:opacity .2s;}
+.redeem-btn:disabled{opacity:.4;cursor:not-allowed;}
+.reject-btn{background:white;color:var(--coral);border:2px solid var(--coral);border-radius:16px;padding:18px 20px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.result-stat{background:var(--bg);border-radius:12px;padding:12px;text-align:center;}
+.result-stat-val{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--ocean);}
+.result-stat-lbl{font-size:10px;color:var(--text-light);margin-top:2px;}
+.result-tier-card{border-radius:18px;padding:18px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.result-tier-medal{font-size:44px;}
+.result-tier-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;margin-bottom:4px;}
+.result-tier-reward{font-size:13px;font-weight:500;line-height:1.4;}
+.result-photos-section{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.result-photo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.result-photo-thumb{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;border:2px solid transparent;}
+.result-photo-thumb.verified{border-color:var(--green);}
+.result-photo-placeholder{width:100%;aspect-ratio:1;border-radius:10px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.result-action-row{display:flex;gap:10px;margin-bottom:14px;}
+.photo-check-section{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.photo-check-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.photo-check-title{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-mid);}
+.photo-check-progress{font-size:12px;font-weight:700;color:var(--ocean);background:var(--bg);border-radius:20px;padding:4px 12px;}
+.photo-check-progress.complete{background:#e8f5ec;color:var(--green);}
+.photo-item-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bg);}
+.photo-item-row:last-child{border-bottom:none;}
+.photo-item-emoji{font-size:24px;width:36px;text-align:center;flex-shrink:0;}
+.photo-item-info{flex:1;min-width:0;}
+.photo-item-name{font-size:13px;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.photo-item-loc{font-size:11px;color:var(--text-light);}
+.photo-item-pts{font-size:11px;font-weight:600;color:var(--gold-dark);}
+.photo-verify-btn{flex-shrink:0;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .1s;}
+.photo-verify-btn:active{transform:scale(.93);}
+.photo-verify-btn.pending{background:var(--ocean);color:white;}
+.photo-verify-btn.approved{background:#e8f5ec;color:var(--green);}
+.photo-verify-btn.rejected{background:#fff0ee;color:var(--coral);}
+.photo-verify-icon{font-size:16px;margin-right:3px;}
+/* Override bar */
+.override-bar{background:linear-gradient(135deg,#fff8e6,#fff3d0);border:1px solid #e8d070;border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.override-text{font-size:12px;color:#7a5a00;line-height:1.4;}
+.override-btn{background:#a07820;color:white;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;}
+/* Photo check modal */
+#photo-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center;max-width:480px;left:50%;transform:translateX(-50%);}
+#photo-modal.open{display:flex;}
+.photo-modal-sheet{background:white;border-radius:24px 24px 0 0;padding:24px 24px 40px;width:100%;animation:slideUp .25s ease;}
+.photo-modal-handle{width:36px;height:4px;background:var(--sand-dark);border-radius:2px;margin:0 auto 20px;}
+.photo-modal-directive{background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));border-radius:16px;padding:18px 20px;color:white;text-align:center;margin-bottom:18px;}
+.photo-modal-directive-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:8px;}
+.photo-modal-item-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;margin-bottom:4px;}
+.photo-modal-item-emoji{font-size:40px;margin-bottom:6px;display:block;}
+.photo-modal-desc{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;}
+.photo-modal-checklist{margin-bottom:18px;}
+.photo-modal-check-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--sand);}
+.photo-modal-check-item:last-child{border-bottom:none;}
+.check-circle{width:20px;height:20px;border-radius:50%;border:2px solid var(--sand-dark);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.check-circle.checked{background:var(--green);border-color:var(--green);color:white;}
+.photo-modal-check-text{font-size:13px;color:var(--text-dark);}
+.photo-modal-actions{display:flex;gap:10px;}
+.modal-approve-btn{flex:1;background:linear-gradient(135deg,var(--green),#2d6335);color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.modal-reject-btn{background:white;color:var(--coral);border:2px solid var(--coral);border-radius:14px;padding:16px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text-dark);color:white;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── STAFF NOTES ── */
+.notes-card{background:white;border-radius:18px;padding:18px 20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid var(--sand-dark);}
+.notes-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.notes-card-icon{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--ocean),var(--ocean-mid));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.notes-card-title{font-size:14px;font-weight:700;color:var(--text-dark);}
+.notes-card-sub{font-size:11px;color:var(--text-light);margin-top:1px;}
+.notes-textarea{width:100%;padding:14px 16px;border:2px solid var(--sand-dark);border-radius:13px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;outline:none;height:90px;color:var(--text-dark);background:var(--bg);line-height:1.5;transition:border-color .2s;}
+.notes-textarea:focus{border-color:var(--ocean-light);background:white;}
+.notes-textarea::placeholder{color:var(--text-light);}
+.notes-quick-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.notes-tag{background:var(--sand);border:1px solid var(--sand-dark);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-mid);cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s,color .15s;white-space:nowrap;}
+.notes-tag:hover{background:var(--ocean);border-color:var(--ocean);color:white;}
+
+.tier-bronze{background:linear-gradient(135deg,#fdf1e6,#fae3c8);border:1px solid #e8c49a;}
+.tier-silver{background:linear-gradient(135deg,#f2f5f8,#e4eaf0);border:1px solid #b8c8d8;}
+.tier-gold{background:linear-gradient(135deg,#fffbeb,#fff3c8);border:1px solid #e8d070;}
+.tier-platinum{background:linear-gradient(135deg,#f0f8ff,#e0f0ff);border:1px solid #90c8f0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════ LOGIN ════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-logo">
+    <span class="login-island">🏛️</span>
+    <div class="login-title">Chamber of Commerce<br>Staff Portal</div>
+    <div class="login-sub">Block Island Scavenger Hunt · Verification</div>
+  </div>
+  <div class="login-card">
+    <div class="login-card-title">Select your account</div>
+    <div class="staff-grid" id="staff-grid"></div>
+    <div class="pin-section">
+      <div class="pin-label">Enter PIN</div>
+      <input class="pin-input" id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" oninput="clearLoginError()">
+    </div>
+    <button class="login-btn" onclick="attemptLogin()">Sign In →</button>
+    <div class="login-error" id="login-error">Incorrect PIN. Please try again.</div>
+  </div>
+  <div class="login-note">🔒 Staff access only · Block Island App v1.0</div>
+</div>
+
+<!-- ════════ DASHBOARD ════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="dash-header">
+    <div class="dash-header-top">
+      <div class="dash-staff-pill">
+        <div class="dash-staff-dot"></div>
+        <span id="dash-staff-name">Staff</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+    <div class="dash-title">Verification<br>Dashboard</div>
+    <div class="dash-date" id="dash-date"></div>
+    <div class="dash-stats">
+      <div class="dash-stat"><div class="dash-stat-val" id="dash-today">0</div><div class="dash-stat-lbl">TODAY</div></div>
+      <div class="dash-stat"><div class="dash-stat-val" id="dash-week">0</div><div class="dash-stat-lbl">THIS WEEK</div></div>
+      <div class="dash-stat"><div class="dash-stat-val" id="dash-total">0</div><div class="dash-stat-lbl">ALL TIME</div></div>
+    </div>
+  </div>
+  <div class="dash-body">
+    <button class="scan-cta" onclick="startScanner()">
+      <span class="scan-icon">📷</span>
+      <div class="scan-cta-title">Scan Hunter's QR Code</div>
+      <div class="scan-cta-sub">Tap to open camera scanner</div>
+    </button>
+    <div class="manual-entry-card">
+      <div class="manual-entry-title">⌨️ Manual Code Entry (backup)</div>
+      <div class="manual-entry-row">
+        <input class="manual-input" id="manual-code-input" type="text" placeholder="BI-WK-XXX-XXXX" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')lookupManualCode()">
+        <button class="manual-btn" onclick="lookupManualCode()">Verify →</button>
+      </div>
+    </div>
+    <div class="section-head">Recent Verifications</div>
+    <div id="history-list"></div>
+
+    <!-- DEMO CHEAT-SHEET -->
+    <div style="background:linear-gradient(135deg,#fff8e6,#fff3d0);border:2px dashed #e8d070;border-radius:18px;padding:20px;margin-top:8px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a07820;margin-bottom:14px;">🧪 Demo Codes — Chamber Presentation</div>
+      <div id="demo-code-list"></div>
+      <div style="font-size:11px;color:#a07820;margin-top:12px;line-height:1.5;">Type any code above into the manual entry field to test each scenario. Demo codes reset when you clear browser storage.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SCANNER ════════ -->
+<div id="screen-scanner" class="screen" style="position:relative;background:#000;">
+  <div class="scanner-header">
+    <button class="scanner-back" onclick="stopScanner()">←</button>
+    <div class="scanner-title">Scan Hunter's QR Code</div>
+  </div>
+  <video id="scanner-video" autoplay playsinline muted></video>
+  <div class="scanner-overlay">
+    <div class="scan-frame">
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+      <div class="scan-line"></div>
+    </div>
+  </div>
+  <div class="scanner-hint">Hold camera steady over the QR code</div>
+  <canvas id="scanner-canvas"></canvas>
+</div>
+
+<!-- ════════ RESULT ════════ -->
+<div id="screen-result" class="screen">
+  <div class="result-header" id="result-header">
+    <button class="result-back" onclick="showScreen('dashboard')">←</button>
+    <span class="result-status-icon" id="result-icon">✅</span>
+    <div class="result-status-title" id="result-title">Valid Submission</div>
+    <div style="text-align:center;margin-top:8px;">
+      <div class="result-code-chip" id="result-code-chip">BI-XXXX-XXXXX</div>
+    </div>
+  </div>
+  <div class="result-body" id="result-body"></div>
+</div>
+
+<!-- ════════ PHOTO CHECK MODAL ════════ -->
+<div id="photo-modal">
+  <div class="photo-modal-sheet">
+    <div class="photo-modal-handle"></div>
+    <div class="photo-modal-directive">
+      <div class="photo-modal-directive-label">📲 Ask Hunter to Show Their Phone</div>
+      <span class="photo-modal-item-emoji" id="pm-emoji">📷</span>
+      <div class="photo-modal-item-name" id="pm-name">Item Name</div>
+      <div class="photo-modal-desc" id="pm-desc">Verify the photo matches this location and subject.</div>
+    </div>
+    <div class="photo-modal-checklist">
+      <div style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:10px;">Verify the photo shows:</div>
+      <div id="pm-checklist"></div>
+    </div>
+    <div class="photo-modal-actions">
+      <button class="modal-approve-btn" onclick="approvePhoto()">✅ Photo Valid</button>
+      <button class="modal-reject-btn" onclick="rejectPhoto()">✗ Reject</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+//  STAFF ACCOUNTS
+//  TODO: Replace with Firebase Auth in production
+// ════════════════════════════════════════
+const STAFF = [
+  {id:'s1', name:'Maya Chen',   role:'Manager', pin:'1234', color:'#1a6b8a', initials:'MC'},
+  {id:'s2', name:'Jake Torres', role:'Staff',   pin:'2345', color:'#3a7d44', initials:'JT'},
+  {id:'s3', name:'Lily Park',   role:'Staff',   pin:'3456', color:'#7b3fa0', initials:'LP'},
+  {id:'s4', name:'Tom Walsh',   role:'Staff',   pin:'4567', color:'#c0392b', initials:'TW'},
+];
+
+let currentStaff = null;
+let scannerStream = null;
+let scannerAnimFrame = null;
+let currentResult = null;
+
+// ════════════════════════════════════════
+//  LOCAL STORAGE (replace with Firebase)
+// ════════════════════════════════════════
+function getRedemptions(){
+  try{ return JSON.parse(localStorage.getItem('bi_redemptions')||'[]'); }catch(e){ return []; }
+}
+function saveRedemption(record){
+  // TODO: await db.collection('redemptions').add(record);
+  const list = getRedemptions();
+  list.unshift(record);
+  localStorage.setItem('bi_redemptions', JSON.stringify(list.slice(0,200)));
+}
+function isRedeemed(code){
+  return getRedemptions().some(r=>r.code===code && r.status==='redeemed');
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='dashboard') refreshDashboard();
+}
+
+// ════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════
+function renderStaffGrid(){
+  const grid = document.getElementById('staff-grid');
+  grid.innerHTML = '';
+  STAFF.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.className = 'staff-btn';
+    btn.id = 'staff-btn-'+s.id;
+    btn.innerHTML = `
+      <div class="staff-avatar" style="background:${s.color};">${s.initials}</div>
+      <div class="staff-name">${s.name}</div>
+      <div class="staff-role">${s.role}</div>`;
+    btn.onclick = ()=>selectStaff(s.id);
+    grid.appendChild(btn);
+  });
+}
+
+function selectStaff(id){
+  document.querySelectorAll('.staff-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('staff-btn-'+id).classList.add('selected');
+  currentStaff = STAFF.find(s=>s.id===id);
+  document.getElementById('pin-input').focus();
+}
+
+function clearLoginError(){
+  document.getElementById('login-error').style.display='none';
+}
+
+function attemptLogin(){
+  if(!currentStaff){ showToast('Please select your account'); return; }
+  const pin = document.getElementById('pin-input').value;
+  if(pin === currentStaff.pin){
+    // TODO: Firebase signInWithEmailAndPassword(auth, staff.email, pin)
+    sessionStorage.setItem('bi_staff', JSON.stringify(currentStaff));
+    document.getElementById('pin-input').value='';
+    showScreen('dashboard');
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem('bi_staff');
+  currentStaff=null;
+  document.querySelectorAll('.staff-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('pin-input').value='';
+  showScreen('login');
+}
+
+// ════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════
+function refreshDashboard(){
+  const staff = currentStaff || JSON.parse(sessionStorage.getItem('bi_staff')||'null');
+  if(staff) document.getElementById('dash-staff-name').textContent=staff.name;
+
+  const now = new Date();
+  document.getElementById('dash-date').textContent =
+    now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  const all = getRedemptions();
+  const todayStr = now.toDateString();
+  const weekAgo = now.getTime() - 7*24*3600000;
+
+  document.getElementById('dash-today').textContent =
+    all.filter(r=>new Date(r.ts).toDateString()===todayStr).length;
+  document.getElementById('dash-week').textContent =
+    all.filter(r=>r.ts>weekAgo).length;
+  document.getElementById('dash-total').textContent = all.length;
+
+  renderHistory();
+  renderDemoCodes();
+}
+
+function renderDemoCodes(){
+  const container = document.getElementById('demo-code-list');
+  if(!container) return;
+  const scenarios = [
+    {code:'BI-WK-SAR2B4-X7K9', label:'💎 Full Completion — Champion Tier', sub:"Sarah Johnson · Seafarer's Challenge · 7/7 items · 410pts", badge:'$50 Pack', badgeColor:'#3a7d44'},
+    {code:'BI-MO-MCH3C5-P2M8', label:'💎 Full Completion — Platinum Tier', sub:'Mike Chen · Grand Circuit · 11/11 items · 820pts', badge:'$100 Pack', badgeColor:'#1a6b8a'},
+    {code:'BI-EV-EMW4D6-Q3N7', label:'⚡ Event Sprint Finisher', sub:'Emma Wilson · Spring Sprint · 8/8 items · 1h 52m', badge:'Swag Bag', badgeColor:'#c0392b'},
+    {code:'BI-WK-TBR5E7-R4O6', label:'🥉 Partial Completion — Explorer Tier', sub:"Tom Brown · Seafarer's Challenge · 3/7 items · 185pts", badge:'Welcome Pack', badgeColor:'#c8956a'},
+    {code:'BI-MO-ALG6F8-S5P5', label:'⚠️ Already Redeemed (fraud demo)', sub:'Alex Green · Grand Circuit · 9/11 items', badge:'REDEEMED', badgeColor:'#c0392b'},
+  ];
+  container.innerHTML = scenarios.map(s=>`
+    <div style="background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);"
+         onclick="document.getElementById('manual-code-input').value='${s.code}';document.querySelector('.manual-entry-card').scrollIntoView({behavior:'smooth'});showToast('Code filled in ✓');">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-dark);margin-bottom:2px;">${s.label}</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:600;color:var(--ocean);margin-bottom:3px;">${s.code}</div>
+        <div style="font-size:11px;color:var(--text-light);">${s.sub}</div>
+      </div>
+      <div style="background:${s.badgeColor};color:white;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;">${s.badge}</div>
+    </div>`).join('');
+}
+
+function renderHistory(){
+  const list = document.getElementById('history-list');
+  const all = getRedemptions().slice(0,10);
+  if(all.length===0){
+    list.innerHTML=`<div class="empty-history"><div style="font-size:36px;margin-bottom:8px;">📋</div><div style="font-weight:600;color:var(--text-dark);margin-bottom:4px;">No verifications yet</div><div style="font-size:12px;">Scan a hunter's QR code to get started</div></div>`;
+    return;
+  }
+  list.innerHTML='';
+  all.forEach(r=>{
+    const d=new Date(r.ts);
+    const timeStr=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const item=document.createElement('div');
+    item.className='history-item';
+    item.style='cursor:pointer;';
+    item.innerHTML=`
+      <div class="history-status ${r.status}">
+        ${r.status==='redeemed'?'✅':'❌'}
+      </div>
+      <div class="history-info">
+        <div class="history-name">${r.userName||'Unknown'}</div>
+        <div class="history-meta">${r.huntName||'Hunt'} · ${r.tier||''} · ${dateStr} ${timeStr} · ${r.staffName||''}</div>
+      </div>
+      <div class="history-pts">${r.pts||0}<div style="font-size:10px;color:var(--text-light);font-family:'DM Sans',sans-serif;font-weight:400;">pts</div></div>`;
+    item.onclick=()=>{ currentResult=r; renderResult(r); showScreen('result'); };
+    list.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════
+//  QR SCANNER
+// ════════════════════════════════════════
+async function startScanner(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    scannerStream=stream;
+    const video=document.getElementById('scanner-video');
+    video.srcObject=stream;
+    showScreen('scanner');
+    video.addEventListener('loadeddata',()=>requestAnimationFrame(scanFrame),{once:true});
+  }catch(e){
+    showToast('Camera not available — use manual entry');
+    document.getElementById('manual-code-input').focus();
+  }
+}
+
+function scanFrame(){
+  const video=document.getElementById('scanner-video');
+  const canvas=document.getElementById('scanner-canvas');
+  if(!scannerStream||video.readyState<2){ scannerAnimFrame=requestAnimationFrame(scanFrame); return; }
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(video,0,0);
+  const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'});
+  if(code){
+    stopScanner();
+    processQRData(code.data);
+  } else {
+    scannerAnimFrame=requestAnimationFrame(scanFrame);
+  }
+}
+
+function stopScanner(){
+  if(scannerStream){ scannerStream.getTracks().forEach(t=>t.stop()); scannerStream=null; }
+  if(scannerAnimFrame){ cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame=null; }
+  showScreen('dashboard');
+}
+
+// ════════════════════════════════════════
+//  DEMO CODES  (pre-seeded for Chamber demos)
+//  In production these come from Firebase
+// ════════════════════════════════════════
+const DEMO_CODES = {
+  'BI-WK-SAR2B4-X7K9': {
+    v:1, code:'BI-WK-SAR2B4-X7K9',
+    name:'Sarah Johnson', hunt:"The Seafarer's Challenge",
+    huntId:'weekly-current', type:'weekly',
+    pts:410, done:7, total:7, photos:7,
+    tier:'Champion', reward:'$50 BI Experience Pack — dining + activity voucher + swag bag',
+    ts: Date.now() - 1000*60*47,
+    _demo:true,
+    completedItems:[
+      {emoji:'🚢',title:'Ferry Leaving Old Harbor',location:'Old Harbor dock',pts:60},
+      {emoji:'🍺',title:"The Oar's Oar Collection",location:'The Oar, New Harbor',pts:65},
+      {emoji:'🎣',title:'Fishing Vessel at New Harbor',location:'Great Salt Pond Marina',pts:70},
+      {emoji:'🦞',title:'Lobster Trap on Land',location:'New Harbor dock',pts:60},
+      {emoji:'⛵',title:'Breakwater from Water Side',location:'Old Harbor',pts:70},
+      {emoji:'🌅',title:'Great Salt Pond Sunset',location:'New Harbor',pts:80},
+      {emoji:'🗿',title:'Adrian Block Tribute',location:'Old Harbor area',pts:75},
+    ]
+  },
+  'BI-MO-MCH3C5-P2M8': {
+    v:1, code:'BI-MO-MCH3C5-P2M8',
+    name:'Mike Chen', hunt:'Grand Island Circuit',
+    huntId:'monthly-current', type:'monthly',
+    pts:820, done:11, total:11, photos:10,
+    tier:'Grand Circuit Champion', reward:'$100 Block Island Experience Pack — 2 restaurant meals + activity voucher + swag',
+    ts: Date.now() - 1000*60*130,
+    _demo:true,
+    completedItems:[
+      {emoji:'💡',title:'North Light',location:'Sandy Point, north tip',pts:80},
+      {emoji:'🪨',title:"Settler's Rock",location:'North end',pts:65},
+      {emoji:'🌿',title:'Clay Head Overlook',location:'East coast',pts:80},
+      {emoji:'🏖️',title:'Mansion Beach',location:'Northeast coast',pts:70},
+      {emoji:'🦒',title:'1661 Farm Animal',location:'Spring St',pts:65},
+      {emoji:'🏛️',title:'Historical Society',location:'Old Town Rd',pts:60},
+      {emoji:'🌀',title:'Sacred Labyrinth',location:'Corn Neck Rd',pts:60},
+      {emoji:'🌿',title:"Rodman's Hollow",location:'Coonymus Rd',pts:75},
+      {emoji:'🧗',title:'Mohegan Bluffs Beach',location:'Southeast coast',pts:90},
+      {emoji:'🔭',title:'Southeast Lighthouse',location:'Spring St',pts:80},
+      {emoji:'🌅',title:'Great Salt Pond Sunset',location:'New Harbor',pts:95},
+    ]
+  },
+  'BI-EV-EMW4D6-Q3N7': {
+    v:1, code:'BI-EV-EMW4D6-Q3N7',
+    name:'Emma Wilson', hunt:'⚡ Spring Sprint: Island Champion',
+    huntId:'event-spring-sprint', type:'event',
+    pts:600, done:8, total:8, photos:8,
+    tier:'Sprint Finisher', reward:'BI Champion swag bag — t-shirt, pin & map',
+    ts: Date.now() - 1000*60*22,
+    elapsedTime:'1h 52m',
+    _demo:true,
+    completedItems:[
+      {emoji:'💡',title:'North Light',location:'Sandy Point — FAR NORTH',pts:75},
+      {emoji:'🪨',title:"Settler's Rock",location:'Near North Light',pts:60},
+      {emoji:'🌿',title:'Clay Head Overlook',location:'East coast',pts:75},
+      {emoji:'🦒',title:'1661 Farm — Any Animal',location:'Spring St',pts:65},
+      {emoji:'⚓',title:'Old Harbor Dock',location:'Water St',pts:55},
+      {emoji:'🧗',title:'Mohegan Bluffs Beach',location:'Southeast — FAR SOUTH',pts:100},
+      {emoji:'🔭',title:'Southeast Lighthouse',location:'Spring St',pts:70},
+      {emoji:'🌅',title:'Great Salt Pond Finish',location:'New Harbor — WEST SIDE',pts:100},
+    ]
+  },
+  'BI-WK-TBR5E7-R4O6': {
+    v:1, code:'BI-WK-TBR5E7-R4O6',
+    name:'Tom Brown', hunt:"The Seafarer's Challenge",
+    huntId:'weekly-current', type:'weekly',
+    pts:185, done:3, total:7, photos:3,
+    tier:'Explorer', reward:'BI Welcome Pack — sticker set, map & button badge',
+    ts: Date.now() - 1000*60*200,
+    _demo:true,
+    completedItems:[
+      {emoji:'🚢',title:'Ferry Leaving Old Harbor',location:'Old Harbor dock',pts:60},
+      {emoji:'🍺',title:"The Oar's Oar Collection",location:'The Oar, New Harbor',pts:65},
+      {emoji:'🌅',title:'Great Salt Pond Sunset',location:'New Harbor',pts:80},
+    ]
+  },
+  'BI-MO-ALG6F8-S5P5': {
+    v:1, code:'BI-MO-ALG6F8-S5P5',
+    name:'Alex Green', hunt:'Grand Island Circuit',
+    huntId:'monthly-current', type:'monthly',
+    pts:650, done:9, total:11, photos:9,
+    tier:'Islander', reward:'$40 island dining credit at any participating restaurant',
+    ts: Date.now() - 1000*60*60*26,
+    _demo:true, _alreadyRedeemed:true,
+    completedItems:[
+      {emoji:'💡',title:'North Light',location:'Sandy Point',pts:80},
+      {emoji:'🪨',title:"Settler's Rock",location:'North end',pts:65},
+      {emoji:'🌿',title:'Clay Head Overlook',location:'East coast',pts:80},
+      {emoji:'🏖️',title:'Mansion Beach',location:'Northeast coast',pts:70},
+      {emoji:'🦒',title:'1661 Farm Animal',location:'Spring St',pts:65},
+      {emoji:'🏛️',title:'Historical Society',location:'Old Town Rd',pts:60},
+      {emoji:'🌀',title:'Sacred Labyrinth',location:'Corn Neck Rd',pts:60},
+      {emoji:'🌿',title:"Rodman's Hollow",location:'Coonymus Rd',pts:75},
+      {emoji:'🧗',title:'Mohegan Bluffs Beach',location:'Southeast coast',pts:90},
+    ]
+  },
+};
+
+// ════════════════════════════════════════
+//  MANUAL CODE ENTRY
+// ════════════════════════════════════════
+function lookupManualCode(){
+  const raw=document.getElementById('manual-code-input').value.trim().toUpperCase();
+  if(!raw){ showToast('Please enter a verification code'); return; }
+  document.getElementById('manual-code-input').value='';
+
+  // Check demo codes first, then try JSON parse
+  if(DEMO_CODES[raw]){
+    const demo=DEMO_CODES[raw];
+    // If marked as already-redeemed demo, inject it into localStorage so it shows that state
+    if(demo._alreadyRedeemed && !isRedeemed(raw)){
+      saveRedemption({
+        code:raw, userName:demo.name, huntName:demo.hunt,
+        pts:demo.pts, tier:demo.tier, reward:demo.reward,
+        staffId:'demo', staffName:'Demo Staff',
+        ts:demo.ts - 1000*60*30, status:'redeemed'
+      });
+    }
+    currentResult=demo;
+    renderResult(demo);
+    showScreen('result');
+    return;
+  }
+
+  // Fall back to raw / JSON
+  processQRData(raw);
+}
+
+// ════════════════════════════════════════
+//  PROCESS RESULT
+// ════════════════════════════════════════
+function processQRData(raw){
+  let data;
+  try{
+    data=JSON.parse(raw);
+    if(!data.code) throw new Error('no code');
+  }catch(e){
+    // Maybe it's just a raw code string
+    data={v:0,code:raw,name:'—',hunt:'Unknown Hunt',pts:0,done:0,total:0,tier:'—',reward:'Present code at Chamber',ts:Date.now(),_rawCode:true};
+  }
+  currentResult=data;
+  renderResult(data);
+  showScreen('result');
+}
+
+// ════════════════════════════════════════
+//  PHOTO VERIFICATION STATE
+// ════════════════════════════════════════
+let photoVerifyState = {}; // itemIndex -> 'pending'|'approved'|'rejected'
+let currentPhotoIndex = null;
+let overrideGranted = false;
+
+function initPhotoVerifyState(items){
+  photoVerifyState = {};
+  overrideGranted = false;
+  (items||[]).forEach((_,i)=>{ photoVerifyState[i]='pending'; });
+}
+
+function getVerifyStats(items){
+  const total=(items||[]).length;
+  const approved=Object.values(photoVerifyState).filter(v=>v==='approved').length;
+  const rejected=Object.values(photoVerifyState).filter(v=>v==='rejected').length;
+  const pending=total-approved-rejected;
+  return {total,approved,rejected,pending};
+}
+
+function allPhotosResolved(items){
+  return Object.values(photoVerifyState).every(v=>v!=='pending');
+}
+
+// ════════════════════════════════════════
+//  RENDER RESULT
+// ════════════════════════════════════════
+function renderResult(data){
+  const alreadyRedeemed=isRedeemed(data.code);
+  const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
+
+  // Init photo verify state from items
+  if(data.completedItems) initPhotoVerifyState(data.completedItems);
+
+  // Header colour
+  const header=document.getElementById('result-header');
+  header.style.background=alreadyRedeemed
+    ?'linear-gradient(135deg,#c0392b,#922b21)'
+    :'linear-gradient(135deg,#0b3d5e,#1a6b8a)';
+  document.getElementById('result-icon').textContent=alreadyRedeemed?'⚠️':'✅';
+  document.getElementById('result-title').textContent=alreadyRedeemed?'Already Redeemed':'Valid Submission';
+  document.getElementById('result-code-chip').textContent=data.code;
+
+  const body=document.getElementById('result-body');
+  const initials=(data.name||'??').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const tierColorMap={'Explorer':'tier-bronze','Adventurer':'tier-silver','Islander':'tier-gold','Champion':'tier-platinum','Grand Circuit Champion':'tier-platinum','Sprint Finisher':'tier-bronze'};
+  const tierColor=tierColorMap[data.tier]||'tier-bronze';
+
+  body.innerHTML=`
+    ${alreadyRedeemed?`
+    <div class="already-redeemed-banner">
+      <span style="font-size:32px;">⚠️</span>
+      <div><div style="font-weight:700;font-size:15px;color:var(--coral);">Code Already Redeemed</div>
+      <div style="font-size:13px;color:var(--text-mid);margin-top:3px;">This reward was already claimed. Do not issue again.</div></div>
+    </div>`:''}
+
+    <!-- Hunter info -->
+    <div class="result-user-card">
+      <div class="result-user-row">
+        <div class="result-avatar">${initials}</div>
+        <div>
+          <div class="result-name">${data.name||'Unknown'}</div>
+          <div class="result-hunt">${data.hunt||'Unknown Hunt'}${data.type?' · '+data.type.charAt(0).toUpperCase()+data.type.slice(1)+' Hunt':''}</div>
+        </div>
+      </div>
+      <div class="result-stats-grid">
+        <div class="result-stat"><div class="result-stat-val">${data.pts||0}</div><div class="result-stat-lbl">POINTS</div></div>
+        <div class="result-stat"><div class="result-stat-val">${data.done||0}/${data.total||0}</div><div class="result-stat-lbl">ITEMS</div></div>
+        <div class="result-stat"><div class="result-stat-val">${data.photos||0}</div><div class="result-stat-lbl">PHOTOS</div></div>
+      </div>
+      ${data.elapsedTime?`<div style="margin-top:12px;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text-mid);">⏱ Completion time: <strong>${data.elapsedTime}</strong></div>`:''}
+    </div>
+
+    <!-- Reward tier -->
+    <div class="result-tier-card ${tierColor}">
+      <div class="result-tier-medal">${getTierMedal(data.tier)}</div>
+      <div>
+        <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:4px;">REWARD TO ISSUE</div>
+        <div class="result-tier-name">${data.tier||'—'}</div>
+        <div class="result-tier-reward">${data.reward||'Verify with hunt details'}</div>
+      </div>
+    </div>
+
+    ${data._manualEntry||data._rawCode?`
+    <div style="background:#fff8e6;border:1px solid #ffe9a0;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#7a5a00;">
+      ⚠️ <strong>Manual entry</strong> — limited data available. Ask hunter to show their full certificate screen for photo verification.
+    </div>`:''}
+
+    <!-- Photo verification checklist -->
+    ${data.completedItems&&data.completedItems.length>0?`
+    <div class="photo-check-section" id="photo-check-section">
+      <div class="photo-check-header">
+        <div class="photo-check-title">📸 Photo Verification</div>
+        <div class="photo-check-progress" id="photo-check-progress">0/${data.completedItems.length} verified</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-light);margin-bottom:14px;line-height:1.5;">
+        Ask the hunter to show each photo on their phone. Tap <strong>Verify →</strong> on each item, then confirm or reject.
+      </div>
+      <div id="photo-items-list"></div>
+    </div>
+
+    <div class="override-bar" id="override-bar" style="display:none;">
+      <div class="override-text">⚠️ Some photos unverified. Manager can override to proceed with notes.</div>
+      <button class="override-btn" onclick="grantOverride()">Override</button>
+    </div>`:''}
+
+    <!-- Staff notes -->
+    <div class="notes-card">
+      <div class="notes-card-header">
+        <div class="notes-card-icon">📝</div>
+        <div>
+          <div class="notes-card-title">Staff Notes</div>
+          <div class="notes-card-sub">Optional — logged with this verification record</div>
+        </div>
+      </div>
+      <textarea class="notes-textarea" id="staff-notes" placeholder="Add any notes about this redemption, photo quality, or flagged items…"></textarea>
+      <div class="notes-quick-tags">
+        <button class="notes-tag" onclick="appendNote('All photos verified in person')">✅ Photos verified</button>
+        <button class="notes-tag" onclick="appendNote('Photo quality was low but accepted')">⚠️ Low quality</button>
+        <button class="notes-tag" onclick="appendNote('Receipt date confirmed matches today')">🧾 Receipt confirmed</button>
+        <button class="notes-tag" onclick="appendNote('Hunter was cooperative and friendly')">👍 No issues</button>
+        <button class="notes-tag" onclick="appendNote('Manager override applied')">🔓 Override used</button>
+      </div>
+    </div>
+
+    <!-- Timestamp / staff -->
+    <div style="background:white;border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);font-size:13px;color:var(--text-mid);">
+      🕐 Verified: ${new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}
+      &nbsp;·&nbsp; 👤 ${staff.name||'Staff'}
+    </div>
+
+    <!-- Actions -->
+    ${!alreadyRedeemed?`
+    <div class="result-action-row">
+      <button class="redeem-btn" id="redeem-main-btn" onclick="markRedeemed()" style="opacity:.4;cursor:not-allowed;" disabled>
+        ✅ Mark Redeemed & Issue Reward
+      </button>
+      <button class="reject-btn" onclick="markRejected()">✗</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-light);text-align:center;margin-bottom:14px;" id="redeem-hint">
+      ${data.completedItems&&data.completedItems.length>0?'Complete photo verification above to enable':''}
+    </div>`:`
+    <button onclick="showScreen('dashboard')" style="width:100%;background:var(--ocean);color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">← Back to Dashboard</button>
+    `}`;
+
+  // Render the photo items list
+  if(data.completedItems&&data.completedItems.length>0) renderPhotoItemsList(data);
+}
+
+// ════════════════════════════════════════
+//  PHOTO ITEMS LIST
+// ════════════════════════════════════════
+function renderPhotoItemsList(data){
+  const list=document.getElementById('photo-items-list');
+  if(!list) return;
+  list.innerHTML='';
+  data.completedItems.forEach((item,i)=>{
+    const status=photoVerifyState[i]||'pending';
+    const row=document.createElement('div');
+    row.className='photo-item-row';
+    row.id=`photo-row-${i}`;
+    const btnClass=status==='approved'?'approved':status==='rejected'?'rejected':'pending';
+    const btnLabel=status==='approved'?'✅ OK':status==='rejected'?'✗ Fail':'Verify →';
+    row.innerHTML=`
+      <div class="photo-item-emoji">${item.emoji}</div>
+      <div class="photo-item-info">
+        <div class="photo-item-name">${item.title}</div>
+        <div class="photo-item-loc">📍 ${item.location}</div>
+        <div class="photo-item-pts">+${item.pts} pts</div>
+      </div>
+      <button class="photo-verify-btn ${btnClass}" onclick="openPhotoModal(${i})">${btnLabel}</button>`;
+    list.appendChild(row);
+  });
+  updateVerifyProgress(data);
+}
+
+function updateVerifyProgress(data){
+  const stats=getVerifyStats(data.completedItems);
+  const progressEl=document.getElementById('photo-check-progress');
+  const redeemBtn=document.getElementById('redeem-main-btn');
+  const hintEl=document.getElementById('redeem-hint');
+  const overrideBar=document.getElementById('override-bar');
+
+  if(progressEl){
+    progressEl.textContent=`${stats.approved}/${stats.total} verified`;
+    progressEl.className='photo-check-progress'+(stats.approved===stats.total?' complete':'');
+  }
+
+  const canRedeem=overrideGranted||(stats.approved===stats.total&&stats.total>0)||(stats.total===0);
+
+  if(redeemBtn){
+    redeemBtn.disabled=!canRedeem;
+    redeemBtn.style.opacity=canRedeem?'1':'.4';
+    redeemBtn.style.cursor=canRedeem?'pointer':'not-allowed';
+  }
+  if(hintEl){
+    if(canRedeem) hintEl.textContent='All photos verified — ready to issue reward!';
+    else if(stats.rejected>0) hintEl.textContent=`${stats.rejected} photo(s) flagged · ${stats.pending} still pending`;
+    else hintEl.textContent=`${stats.pending} photo(s) still need verification`;
+  }
+  // Show override option if there are rejected/pending items and manager is logged in
+  if(overrideBar){
+    const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
+    overrideBar.style.display=(!canRedeem&&(stats.rejected>0||stats.pending>0))&&staff.role==='Manager'?'flex':'none';
+  }
+}
+
+function grantOverride(){
+  overrideGranted=true;
+  updateVerifyProgress(currentResult);
+  showToast('Override granted — proceed with caution');
+}
+
+// ════════════════════════════════════════
+//  PHOTO MODAL
+// ════════════════════════════════════════
+// What to look for when verifying each item type
+const VERIFY_CHECKLIST = {
+  landmark:['Correct landmark is clearly visible','Photo taken on Block Island (not Google)','Hunter appears to be physically present'],
+  maritime:['Correct maritime subject shown','Photo taken at the stated harbor/dock','Visible water/boats match location'],
+  nature:  ['Correct natural feature shown','Taken outdoors on Block Island','Weather/season matches today'],
+  historic:['Correct historic site or marker','Plaque or building clearly legible','Not a screen capture of a website'],
+  beach:   ['Ocean/beach visible in photo','Location matches stated beach','Not a stock photo'],
+  wildlife:['Correct animal or wildlife shown','Appears to be live/in-person photo','Taken on Block Island'],
+  scenic:  ['Scenic view matches the location','Photo taken today (check lighting)','Not reused from a previous visit'],
+  food:    ['Correct food item or receipt visible','Receipt shows Block Island business name','Date on receipt matches today'],
+  shopping:['Receipt or purchase item visible','Business name readable on receipt','Date matches today'],
+  adventure:['Activity shown matches the challenge','Hunter present in photo or location clear','Photo not taken from distance/screen'],
+  finish:  ['Final location clearly shown','Completion appears genuine','Timestamp matches hunt duration'],
+  default: ['Subject is clearly identifiable','Photo appears genuine and recent','Location matches the stated stop'],
+};
+
+function openPhotoModal(index){
+  currentPhotoIndex=index;
+  const item=currentResult.completedItems[index];
+  const checklist=VERIFY_CHECKLIST[item.type]||VERIFY_CHECKLIST.default;
+
+  document.getElementById('pm-emoji').textContent=item.emoji;
+  document.getElementById('pm-name').textContent=item.title;
+  document.getElementById('pm-desc').textContent=`Location: ${item.location}`;
+
+  const cl=document.getElementById('pm-checklist');
+  cl.innerHTML=checklist.map(c=>`
+    <div class="photo-modal-check-item">
+      <div class="check-circle">✓</div>
+      <div class="photo-modal-check-text">${c}</div>
+    </div>`).join('');
+
+  document.getElementById('photo-modal').classList.add('open');
+}
+
+function closePhotoModal(){
+  document.getElementById('photo-modal').classList.remove('open');
+  currentPhotoIndex=null;
+}
+
+function approvePhoto(){
+  if(currentPhotoIndex===null) return;
+  photoVerifyState[currentPhotoIndex]='approved';
+  closePhotoModal();
+  renderPhotoItemsList(currentResult);
+  const stats=getVerifyStats(currentResult.completedItems);
+  showToast(`Photo verified ✅ (${stats.approved}/${stats.total} done)`);
+}
+
+function rejectPhoto(){
+  if(currentPhotoIndex===null) return;
+  photoVerifyState[currentPhotoIndex]='rejected';
+  closePhotoModal();
+  renderPhotoItemsList(currentResult);
+  showToast('Photo flagged ✗');
+}
+
+// Close modal on backdrop tap
+document.addEventListener('click',e=>{
+  if(e.target.id==='photo-modal') closePhotoModal();
+});
+
+
+function getTierMedal(tier){
+  const m={'Explorer':'🥉','Adventurer':'🥈','Islander':'🥇','Champion':'💎','Grand Circuit Champion':'💎','Sprint Finisher':'🏅','Island Champion':'🏆'};
+  return m[tier]||'🏅';
+}
+
+function markRedeemed(){
+  if(!currentResult) return;
+  const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
+  const notes=document.getElementById('staff-notes')?.value||'';
+  // TODO: await db.collection('redemptions').add({...})
+  saveRedemption({
+    code:currentResult.code, userName:currentResult.name, huntName:currentResult.hunt,
+    huntId:currentResult.huntId, type:currentResult.type, pts:currentResult.pts,
+    tier:currentResult.tier, reward:currentResult.reward,
+    done:currentResult.done, total:currentResult.total,
+    staffId:staff.id, staffName:staff.name,
+    notes, ts:Date.now(), status:'redeemed'
+  });
+  showToast('✅ Reward issued & logged!');
+  setTimeout(()=>showScreen('dashboard'),1200);
+}
+
+function markRejected(){
+  if(!currentResult) return;
+  const staff=currentStaff||JSON.parse(sessionStorage.getItem('bi_staff')||'{}');
+  const notes=document.getElementById('staff-notes')?.value||'';
+  saveRedemption({
+    code:currentResult.code, userName:currentResult.name, huntName:currentResult.hunt,
+    pts:currentResult.pts, tier:currentResult.tier,
+    staffId:staff.id, staffName:staff.name,
+    notes, ts:Date.now(), status:'rejected'
+  });
+  showToast('Marked as rejected');
+  setTimeout(()=>showScreen('dashboard'),1000);
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function appendNote(text){
+  const ta=document.getElementById('staff-notes');
+  if(!ta) return;
+  ta.value=ta.value?ta.value+'\n'+text:text;
+  ta.focus();
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  renderStaffGrid();
+  // Re-login if session exists
+  const saved=sessionStorage.getItem('bi_staff');
+  if(saved){
+    currentStaff=JSON.parse(saved);
+    showScreen('dashboard');
+  }
+});
+
+// Enter key on PIN input
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const screen=document.querySelector('.screen.active');
+    if(screen?.id==='screen-login') attemptLogin();
+  }
+});
+</script>
+</body>
+</html>
